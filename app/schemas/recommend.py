@@ -1,0 +1,1 @@
+# Pydantic models for recommendation requests and responses.

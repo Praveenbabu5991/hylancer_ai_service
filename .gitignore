@@ -1,0 +1,33 @@
+# .gitignore - Specifies intentionally untracked files to ignore.
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.pyc
+*.pyd
+*.pyo
+*.egg-info/
+.pytest_cache/
+
+# Environments
+.env
+venv/
+env/
+
+# Editors
+.vscode/
+.idea/
+
+# OS generated files
+.DS_Store
+.Trashes
+Thumbs.db
+
+# Docker
+*.dockerignore
+
+# Logs
+*.log
+logs/
+
+# Data
+data/chroma_db/

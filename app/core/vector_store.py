@@ -1,0 +1,1 @@
+# Manages the Chroma vector database.

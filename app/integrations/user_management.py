@@ -1,0 +1,1 @@
+# app/integrations/user_management.py - Handles communication with the user-management service.

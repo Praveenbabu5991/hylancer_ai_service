@@ -1,0 +1,1 @@
+# app/integrations/project_management.py - Handles communication with the project-management service.

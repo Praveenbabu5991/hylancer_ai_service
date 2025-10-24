@@ -1,0 +1,1 @@
+# app/integrations/chat_management.py - Handles communication with the chat-management service.
