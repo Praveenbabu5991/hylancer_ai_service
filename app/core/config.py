@@ -2,6 +2,7 @@
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from functools import lru_cache
+from typing import Optional
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
@@ -13,7 +14,7 @@ class Settings(BaseSettings):
     AWS_ACCESS_KEY_ID: str | None = None
     AWS_SECRET_ACCESS_KEY: str | None = None
     AWS_REGION: str = "us-east-1"
-    CHROMA_DB_PATH: str = "./data/chroma_db"
+    DATABASE_URL: str = "postgresql+asyncpg://user:password@localhost/db"
 
     # Internal Microservice URLs
     BILLING_SERVICE_URL: Optional[str] = None

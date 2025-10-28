@@ -3,9 +3,6 @@
 # Use a slim Python base image
 FROM python:3.11-slim-bullseye
 
-# Reinstall pysqlite3-binary to ensure it links against the newer system library
-RUN pip install --force-reinstall --no-cache-dir pysqlite3-binary
-
 # Set working directory
 WORKDIR /app
 
@@ -17,6 +14,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the application code
 COPY . .
+# Explicitly copy the updated recommendation_service.py to ensure it's not cached
+COPY app/services/recommendation_service.py app/services/recommendation_service.py
 
 # Expose the port FastAPI runs on
 EXPOSE 8000

@@ -11,7 +11,31 @@ services:
       - "${APP_PORT:-8000}:8000"
     env_file:
       - ./.env
+    depends_on:
+      postgres:
+        condition: service_healthy
     volumes:
       - ./data:/app/data # Mount data directory for ChromaDB persistence
+
+  postgres:
+    image: ankane/pgvector
+    environment:
+      POSTGRES_DB: hylancer_ai
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5433:5432" # Map host port 5433 to container port 5432
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d hylancer_ai"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
+    # command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload # Use this for local development with hot-reloading
+    # The CMD in Dockerfile handles the production run command
     # command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload # Use this for local development with hot-reloading
     # The CMD in Dockerfile handles the production run command

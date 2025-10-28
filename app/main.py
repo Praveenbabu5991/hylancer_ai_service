@@ -1,14 +1,10 @@
 # app/main.py - Main FastAPI application entry point.
 
-import sys
-import pysqlite3
-sys.modules["sqlite3"] = sys.modules["pysqlite3"] = pysqlite3
-
 from fastapi import FastAPI
 from app.core.config import get_settings
 from app.api.v1.router import api_router
-from app.models import HealthCheckResponse
 from loguru import logger
+from pydantic import BaseModel, Field # Import BaseModel and Field for HealthCheckResponse
 
 settings = get_settings()
 
@@ -21,6 +17,10 @@ logger.add(
     enqueue=True
 )
 
+class HealthCheckResponse(BaseModel): # Define HealthCheckResponse here
+    status: str = Field("ok", description="Status of the service.")
+    version: str = Field(..., description="Version of the service.")
+
 app = FastAPI(
     title="Hylancer AI Service",
     version="1.0.0",
@@ -32,7 +32,7 @@ app = FastAPI(
 async def startup_event():
     logger.info("Hylancer AI Service starting up...")
     logger.info(f"LLM Provider: {settings.LLM_PROVIDER}")
-    logger.info(f"ChromaDB Path: {settings.CHROMA_DB_PATH}")
+    logger.info(f"Database URL: {settings.DATABASE_URL}") # Log new database URL
 
 @app.on_event("shutdown")
 async def shutdown_event():
