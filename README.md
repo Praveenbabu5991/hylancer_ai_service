@@ -6,6 +6,7 @@ This is an AI microservice built with FastAPI and LangChain, designed to provide
 
 - **Freelancer Recommendation:** Recommends freelancers based on project requirements.
 - **Project Recommendation:** Recommends projects to freelancers based on their skills.
+- **Freelancer and Project Embedding Management:** CRUD operations for freelancer and project embeddings, including listing all embeddings.
 - **Project Description Generation:** Creates compelling project descriptions.
 - **Freelancer Bio Generation:** Crafts professional bios for freelancers.
 - **LLM Flexibility:** Supports Gemini, AWS Bedrock, and a mock LLM for development.
@@ -18,7 +19,9 @@ This is an AI microservice built with FastAPI and LangChain, designed to provide
 - **Framework:** FastAPI
 - **AI Framework:** LangChain
 - **LLM Providers:** Google Gemini, AWS Bedrock (optional), MockLLM
-- **Vector Database:** ChromaDB
+- **Vector Database:** PostgreSQL with pgvector
+- **ORM:** SQLAlchemy
+- **Database Migrations:** Alembic
 - **HTTP Client:** httpx (for internal service communication)
 - **Containerization:** Docker, Docker Compose
 - **Language:** Python 3.11
@@ -28,57 +31,11 @@ This is an AI microservice built with FastAPI and LangChain, designed to provide
 
 ## Setup and Installation
 
-1.  **Clone the repository:**
-    ```bash
-    git clone <repository_url>
-    cd hylancer-ai-service
-    ```
-
-2.  **Create `.env` file:**
-    Copy the `.env.example` file to `.env` and configure your environment variables. At a minimum, set `LLM_PROVIDER`.
-    ```bash
-    cp .env.example .env
-    ```
-    Edit `.env`:
-    ```ini
-    # .env
-    ENV=dev
-    APP_PORT=8000
-    LLM_PROVIDER=mock # Change to 'gemini' or 'bedrock' for real LLMs
-    # GOOGLE_API_KEY="YOUR_GEMINI_API_KEY"
-    # AWS_ACCESS_KEY_ID="YOUR_AWS_ACCESS_KEY_ID"
-    # AWS_SECRET_ACCESS_KEY="YOUR_AWS_SECRET_ACCESS_KEY"
-    # AWS_REGION="us-east-1"
-
-    # Internal Microservice URLs (example values)
-    BILLING_SERVICE_URL=http://billing-management:8081
-    CHAT_SERVICE_URL=http://chat-management:8082
-    PAYMENT_SERVICE_URL=http://payment-management:8083
-    PROJECT_SERVICE_URL=http://project-management:8084
-    USER_SERVICE_URL=http://user-management:8085
-    ```
-
-3.  **Build and run with Docker Compose:**
-    ```bash
-    docker compose up --build
-    ```
-    This will build the Docker image and start the FastAPI service.
+For detailed setup and installation instructions, please refer to the [Quick Start Guide](quick_start_guide.md).
 
 ## Usage
 
-Once the service is running, you can access the API documentation at:
-
-[http://localhost:8000/docs](http://localhost:8000/docs)
-
-Here you will find all available endpoints and can interact with them directly.
-
-### Endpoints:
-
--   `POST /api/v1/recommend-hylancer`: Recommends freelancers.
--   `POST /api/v1/recommend-project`: Recommends projects.
--   `POST /api/v1/generate-project-description`: Generates project descriptions.
--   `POST /api/v1/generate-bio`: Generates freelancer bios.
--   `GET /health`: Health check endpoint.
+For details on how to use the API and its endpoints, please refer to the [Quick Start Guide](quick_start_guide.md).
 
 ## Development
 
@@ -117,7 +74,12 @@ To run the tests:
 hylancer-ai-service/
 ├── .env.example
 ├── .gitignore
+├── alembic.ini
+├── alembic/
 ├── Dockerfile
+├── init-db.sql
+├── ingest_sample_data.py
+├── quick_start_guide.md
 ├── README.md
 ├── app/
 │   ├── __init__.py
@@ -129,29 +91,55 @@ hylancer-ai-service/
 │   │   └── v1/
 │   │       ├── __init__.py
 │   │       ├── endpoints/
+│   │       │   ├── embeddings.py
 │   │       │   ├── generate.py
-│   │       │   └── recommend.py
+│   │       │   ├── generation.py
+│   │       │   ├── health.py
+│   │       │   ├── recommend.py
+│   │       │   └── __pycache__/
 │   │       └── router.py
+│   ├── config.py
 │   ├── core/
+│   │   ├── __init__.py
 │   │   ├── config.py
+│   │   ├── db.py
 │   │   ├── llm_client.py
-│   │   └── vector_client.py
+│   │   ├── llm.py
+│   │   ├── postgres_client.py
+│   │   ├── vector_client.py
+│   │   ├── vector_store.py
+│   │   └── __pycache__/
+│   ├── db_models.py
+│   ├── dependencies.py
 │   ├── integrations/
-│   │   ├── __init__.py # Initializes the integrations package.
-│   │   ├── base_client.py # Reusable async API client for internal services.
-│   │   ├── billing_management.py # Handles communication with the billing-management service.
-│   │   ├── chat_management.py # Handles communication with the chat-management service.
-│   │   ├── payment_management.py # Handles communication with the payment-management service.
-│   │   ├── project_management.py # Handles communication with the project-management service.
-│   │   └── user_management.py # Handles communication with the user-management service.
+│   │   ├── __init__.py
+│   │   ├── base_client.py
+│   │   ├── billing_management.py
+│   │   ├── chat_management.py
+│   │   ├── payment_management.py
+│   │   ├── project_management.py
+│   │   └── user_management.py
 │   ├── main.py
 │   ├── models.py
+│   ├── __pycache__/
+│   ├── schemas/
+│   │   ├── __init__.py
+│   │   ├── embeddings.py
+│   │   ├── generate.py
+│   │   ├── generation.py
+│   │   ├── recommend.py
+│   │   └── __pycache__/
 │   ├── services/
+│   │   ├── __init__.py
+│   │   ├── embedding_service.py
 │   │   ├── generation_service.py
-│   │   └── recommendation_service.py
+│   │   ├── recommendation_service.py
+│   │   └── __pycache__/
 │   └── utils/
 │       ├── parser.py
-│       └── prompts.py
+│       ├── prompts.py
+│       ├── scoring.py
+│       └── __pycache__/
 ├── data/
 │   └── .gitkeep
 ├── docker-compose.yml
@@ -164,5 +152,7 @@ hylancer-ai-service/
 │   └── .gitkeep
 └── tests/
     ├── __init__.py
+    ├── test_generate.py
+    ├── test_recommend.py
     └── test_smoke.py
 ```

@@ -1,6 +1,7 @@
 # app/core/llm_client.py - Implements a get_llm() function for different LLM providers and embedding models.
 
 from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
+from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 from langchain_community.llms import Bedrock
 from langchain_community.embeddings import BedrockEmbeddings
 from langchain_core.language_models.llms import BaseLLM
@@ -41,7 +42,11 @@ class MockEmbeddings(Embeddings):
 
 async def get_llm() -> BaseLLM:
     settings = get_settings()
-    if settings.LLM_PROVIDER == "gemini":
+    if settings.LLM_PROVIDER == "openai":
+        if not settings.OPENAI_API_KEY:
+            raise ValueError("OPENAI_API_KEY not set for OpenAI provider.")
+        return ChatOpenAI(model="gpt-4o-mini", openai_api_key=settings.OPENAI_API_KEY, temperature=0.7)
+    elif settings.LLM_PROVIDER == "gemini":
         if not settings.GOOGLE_API_KEY:
             raise ValueError("GOOGLE_API_KEY not set for Gemini provider.")
         return ChatGoogleGenerativeAI(model="gemini-pro", google_api_key=settings.GOOGLE_API_KEY)
@@ -60,10 +65,21 @@ async def get_llm() -> BaseLLM:
 
 async def get_embedding_model() -> Embeddings:
     settings = get_settings()
-    if settings.LLM_PROVIDER == "gemini":
+    if settings.LLM_PROVIDER == "openai":
+        if not settings.OPENAI_API_KEY:
+            raise ValueError("OPENAI_API_KEY not set for OpenAI provider.")
+        return OpenAIEmbeddings(
+            model=settings.EMBEDDING_MODEL,
+            openai_api_key=settings.OPENAI_API_KEY,
+            dimensions=settings.EMBEDDING_DIMENSIONS
+        )
+    elif settings.LLM_PROVIDER == "gemini":
         if not settings.GOOGLE_API_KEY:
             raise ValueError("GOOGLE_API_KEY not set for Gemini provider.")
-        return GoogleGenerativeAIEmbeddings(model="models/embedding-001", google_api_key=settings.GOOGLE_API_KEY)
+        return GoogleGenerativeAIEmbeddings(
+            model=settings.EMBEDDING_MODEL,
+            google_api_key=settings.GOOGLE_API_KEY
+        )
     elif settings.LLM_PROVIDER == "bedrock":
         if not settings.AWS_ACCESS_KEY_ID or not settings.AWS_SECRET_ACCESS_KEY:
             raise ValueError("AWS credentials not set for Bedrock provider.")

@@ -1,5 +1,5 @@
-# app/api/v1/endpoints/generate.py
-from fastapi import APIRouter, HTTPException, status, Body
+# app/api/v1/endpoints/generation.py
+from fastapi import APIRouter, HTTPException, status
 from loguru import logger
 
 from app.services.generation_service import GenerationService
@@ -28,17 +28,8 @@ async def get_generation_service() -> GenerationService:
     description="Generate a professional project description using AI based on category, skills, and budget"
 )
 async def generate_project_description(
-    request: GenerateProjectDescriptionRequest = Body(
-        ...,
-        example={
-            "category": "Web Development",
-            "sub_category": "Full-Stack",
-            "required_skills": ["React", "Node.js", "PostgreSQL"],
-            "budget_type": "Fixed-Price",
-            "budget": 5000,
-            "deadline": "2025-12-31"
-        }
-    )
+    request: GenerateProjectDescriptionRequest,
+    service: GenerationService = None
 ):
     """
     Generate a project description using AI.
@@ -61,7 +52,9 @@ async def generate_project_description(
     }
     """
     try:
-        service = await get_generation_service()
+        if service is None:
+            service = await get_generation_service()
+
         logger.info(f"Generating project description for category: {request.category}")
         response = await service.generate_project_description(request)
         return response
@@ -80,20 +73,8 @@ async def generate_project_description(
     description="Generate a professional bio description for a hylancer using AI"
 )
 async def generate_bio_description(
-    request: GenerateBioDescriptionRequest = Body(
-        ...,
-        example={
-            "name": "John Smith",
-            "title": "Senior Full-Stack Developer",
-            "skills": ["Python", "React", "AWS", "Docker", "PostgreSQL"],
-            "years_of_experience": 8,
-            "top_achievements": [
-                "Built a SaaS platform serving 10K users",
-                "Led a team of 5 developers"
-            ],
-            "personality_traits": ["problem-solver", "team-player", "detail-oriented"]
-        }
-    )
+    request: GenerateBioDescriptionRequest,
+    service: GenerationService = None
 ):
     """
     Generate a professional bio for a hylancer using AI.
@@ -118,7 +99,9 @@ async def generate_bio_description(
     }
     """
     try:
-        service = await get_generation_service()
+        if service is None:
+            service = await get_generation_service()
+
         logger.info(f"Generating bio description for: {request.name}")
         response = await service.generate_bio_description(request)
         return response
