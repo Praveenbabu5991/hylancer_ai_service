@@ -2,19 +2,41 @@
 
 fastapi==0.104.1
 uvicorn[standard]==0.24.0.post1
+
+# LangChain and AI packages - Updated to resolve dependency conflicts
 langchain==0.1.0
-langchain-google-genai==0.0.7
+langchain-core==0.1.23
 langchain-openai==0.0.2
+langchain-google-genai==0.0.7
 langchain-community==0.0.9
-python-dotenv==1.0.0
+langsmith==0.0.87
+
+# Pydantic
 pydantic==2.5.2
+pydantic-core==2.14.5
 pydantic-settings==2.1.0
 
+# OpenAI
+openai==1.109.1
+tiktoken==0.5.2
+
+# AWS
 boto3==1.33.2
+
+# Utilities
+python-dotenv==1.0.0
 loguru==0.7.2
 httpx==0.25.2
+
+# Database
 asyncpg==0.29.0
 psycopg2-binary==2.9.9
 pgvector==0.2.5
 SQLAlchemy==2.0.25
 alembic==1.13.1
+
+# NOTE: If you need langchain-classic, langgraph, or other newer packages,
+# you'll need to upgrade to:
+# langchain-core>=1.0.0
+# pydantic>=2.7.4
+# langsmith>=0.1.17
