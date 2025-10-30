@@ -36,7 +36,8 @@ COPY --from=builder /usr/local/bin /usr/local/bin
 # Create non-root user for security
 RUN useradd -m -u 1000 appuser && \
     mkdir -p /app/logs && \
-    chown -R appuser:appuser /app
+    chown -R appuser:appuser /app && \
+    chmod 777 /app/logs
 
 WORKDIR /app
 

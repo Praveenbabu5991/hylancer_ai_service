@@ -4,16 +4,16 @@ from typing import List, Optional, Dict, Any
 from uuid import UUID
 from datetime import datetime
 
-# Freelancer Embeddings
+# Hylancer Embeddings
 
-class FreelancerMetadata(BaseModel):
-    is_new_freelancer: bool
+class HylancerMetadata(BaseModel):
+    is_new_hylancer: bool
     has_past_projects: bool
     feedback_count: int
 
-class FreelancerEmbeddingCreateRequest(BaseModel):
-    freelancer_id: UUID
-    bio: str = Field(..., min_length=100, description="Freelancer bio (minimum 100 characters)")
+class HylancerEmbeddingCreateRequest(BaseModel):
+    hylancer_id: UUID
+    bio: str = Field(..., min_length=100, description="Hylancer bio (minimum 100 characters)")
     past_projects: str = Field(default="", description="Concatenated past project descriptions")
     skills: List[str] = Field(..., min_length=3, description="Array of skills (minimum 3)")
     success_rate: float = Field(..., ge=0.0, le=1.0)
@@ -24,31 +24,31 @@ class FreelancerEmbeddingCreateRequest(BaseModel):
     location: Optional[str] = None
     experience_level: int = Field(..., ge=1, le=5, description="Experience level 1-5")
     total_projects: int = Field(default=0, ge=0)
-    metadata: FreelancerMetadata
+    metadata: HylancerMetadata
 
-class FreelancerEmbeddingResponse(BaseModel):
+class HylancerEmbeddingResponse(BaseModel):
     status: str = "ok"
-    freelancer_id: UUID
+    hylancer_id: UUID
     created: bool
     embedding_model: str
     data_quality_score: float
 
-class FreelancerEmbeddingStatusResponse(BaseModel):
-    freelancer_id: UUID
+class HylancerEmbeddingStatusResponse(BaseModel):
+    hylancer_id: UUID
     exists: bool
     last_updated: Optional[datetime] = None
     embedding_model: Optional[str] = None
     data_quality_score: Optional[float] = None
 
-class FreelancerEmbeddingDeleteResponse(BaseModel):
+class HylancerEmbeddingDeleteResponse(BaseModel):
     status: str = "ok"
-    freelancer_id: UUID
+    hylancer_id: UUID
     deleted: bool
 
-class FreelancerSchema(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
+class HylancerSchema(BaseModel):
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
 
-    freelancer_id: UUID
+    hylancer_id: UUID = Field(..., validation_alias='freelancer_id', serialization_alias='hylancer_id')
     skills: List[str]
     success_rate: float
     client_satisfaction: float
@@ -65,9 +65,9 @@ class FreelancerSchema(BaseModel):
     created_at: datetime
     last_updated: datetime
 
-class FreelancerListResponse(BaseModel):
-    total_freelancers: int
-    freelancers: List[FreelancerSchema]
+class HylancerListResponse(BaseModel):
+    total_hylancers: int
+    hylancers: List[HylancerSchema]
 
 # Project Embeddings
 

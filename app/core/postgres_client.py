@@ -11,7 +11,7 @@ from loguru import logger
 
 from app.db_models import FreelancerEmbedding, ProjectEmbedding, RecommendationLog
 from app.schemas.embeddings import (
-    FreelancerEmbeddingCreateRequest,
+    HylancerEmbeddingCreateRequest,
     ProjectEmbeddingCreateRequest
 )
 from app.core.config import get_settings
@@ -27,7 +27,7 @@ class PostgresClient:
 
     async def upsert_freelancer_embedding(
         self,
-        freelancer_data: FreelancerEmbeddingCreateRequest,
+        freelancer_data: HylancerEmbeddingCreateRequest,
         bio_embedding: List[float],
         past_project_embedding: Optional[List[float]],
         embedding_model: str,
@@ -35,7 +35,7 @@ class PostgresClient:
     ) -> bool:
         """Upsert freelancer embedding with all fields."""
         insert_stmt = insert(FreelancerEmbedding).values(
-            freelancer_id=freelancer_data.freelancer_id,
+            freelancer_id=freelancer_data.hylancer_id,
             bio_embedding=bio_embedding,
             past_project_embedding=past_project_embedding,
             skills=freelancer_data.skills,
