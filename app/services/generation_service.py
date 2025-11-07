@@ -6,6 +6,9 @@ from app.schemas.generation import (
     GenerateProjectDescriptionResponse,
     GenerateBioDescriptionRequest,
     GenerateBioDescriptionResponse,
+    GenerateBioFromResumeRequest,
+    GenerateBioFromResumeResponse,
+    ParsedResumeData,
 )
 from app.core.llm_client import generate_text
 
@@ -79,6 +82,187 @@ class GenerationService:
             logger.exception(f"Error generating bio description: {e}")
             # Return a fallback response
             return self._get_fallback_bio_response(request)
+
+    async def generate_bio_from_resume(
+        self,
+        request: GenerateBioFromResumeRequest
+    ) -> GenerateBioFromResumeResponse:
+        """
+        Generate a professional bio by parsing a resume and using extracted data.
+
+        This method:
+        1. Parses the resume text to extract structured data
+        2. Uses the extracted data to generate a professional bio
+
+        Args:
+            request: Contains the resume text
+
+        Returns:
+            GenerateBioFromResumeResponse with bio, headline, rate, level, and parsed data
+        """
+        logger.info("Starting bio generation from resume")
+
+        try:
+            # Step 1: Parse the resume to extract structured data
+            logger.info("Parsing resume to extract structured data")
+            parsed_data = await self._parse_resume(request.resume_text)
+
+            # Step 2: Create a bio generation request from parsed data
+            bio_request = GenerateBioDescriptionRequest(
+                name=parsed_data.name,
+                title=parsed_data.title,
+                skills=parsed_data.skills,
+                years_of_experience=parsed_data.years_of_experience,
+                top_achievements=parsed_data.top_achievements,
+                personality_traits=parsed_data.personality_traits or []
+            )
+
+            # Step 3: Generate bio using the existing method
+            logger.info("Generating bio from parsed data")
+            bio_response = await self.generate_bio_description(bio_request)
+
+            # Step 4: Combine results
+            result = GenerateBioFromResumeResponse(
+                bio=bio_response.bio,
+                headline=bio_response.headline,
+                suggested_hourly_rate=bio_response.suggested_hourly_rate,
+                experience_level=bio_response.experience_level,
+                parsed_data=parsed_data
+            )
+
+            logger.info("Successfully generated bio from resume")
+            return result
+
+        except Exception as e:
+            logger.exception(f"Error generating bio from resume: {e}")
+            raise
+
+    async def _parse_resume(self, resume_text: str) -> ParsedResumeData:
+        """
+        Parse a resume text to extract structured data using LLM.
+
+        Args:
+            resume_text: The raw resume text
+
+        Returns:
+            ParsedResumeData with extracted information
+        """
+        logger.info("Parsing resume with LLM")
+
+        prompt = f"""You are an expert resume parser. Extract structured information from the following resume.
+
+Resume Text:
+{resume_text}
+
+Please extract and provide the following information in a structured format:
+1. Full name of the person
+2. Current or most recent professional title/role
+3. Technical skills (list 5-15 skills)
+4. Total years of professional experience (estimate if not explicitly stated)
+5. Top 3-5 achievements or accomplishments
+6. Personality traits or soft skills (3-5 traits like "team-player", "problem-solver", etc.)
+
+Format your response EXACTLY as follows:
+NAME: [full name]
+TITLE: [professional title]
+SKILLS: [skill1, skill2, skill3, ...]
+YEARS: [number only]
+ACHIEVEMENTS:
+- [achievement 1]
+- [achievement 2]
+- [achievement 3]
+TRAITS: [trait1, trait2, trait3, ...]
+
+IMPORTANT:
+- For YEARS, provide only a number (e.g., 5, not "5 years")
+- List skills separated by commas
+- List achievements one per line with a dash
+- List traits separated by commas"""
+
+        try:
+            response_text = await generate_text(prompt)
+            parsed_data = self._parse_resume_response(response_text)
+            logger.info(f"Successfully parsed resume for: {parsed_data.name}")
+            return parsed_data
+
+        except Exception as e:
+            logger.exception(f"Error parsing resume: {e}")
+            raise ValueError(f"Failed to parse resume: {str(e)}")
+
+    def _parse_resume_response(self, response_text: str) -> ParsedResumeData:
+        """
+        Parse the LLM response for resume extraction.
+
+        Args:
+            response_text: The LLM's response
+
+        Returns:
+            ParsedResumeData object
+        """
+        lines = response_text.strip().split("\n")
+
+        name = "Unknown"
+        title = "Professional"
+        skills = []
+        years = 3
+        achievements = []
+        traits = []
+
+        current_field = None
+
+        for line in lines:
+            line = line.strip()
+
+            if line.startswith("NAME:"):
+                name = line.replace("NAME:", "").strip()
+                current_field = "name"
+            elif line.startswith("TITLE:"):
+                title = line.replace("TITLE:", "").strip()
+                current_field = "title"
+            elif line.startswith("SKILLS:"):
+                skills_str = line.replace("SKILLS:", "").strip()
+                skills = [s.strip() for s in skills_str.split(",") if s.strip()]
+                current_field = "skills"
+            elif line.startswith("YEARS:"):
+                try:
+                    years_str = line.replace("YEARS:", "").strip()
+                    # Extract just the number
+                    years = int(''.join(filter(str.isdigit, years_str)) or "3")
+                    years = max(0, min(50, years))  # Clamp between 0-50
+                except:
+                    years = 3
+                current_field = "years"
+            elif line.startswith("ACHIEVEMENTS:"):
+                current_field = "achievements"
+            elif line.startswith("TRAITS:"):
+                traits_str = line.replace("TRAITS:", "").strip()
+                traits = [t.strip() for t in traits_str.split(",") if t.strip()]
+                current_field = "traits"
+            elif current_field == "achievements" and line.startswith("-"):
+                achievement = line.lstrip("- ").strip()
+                if achievement:
+                    achievements.append(achievement)
+
+        # Validate and set defaults
+        if not name or name == "Unknown":
+            name = "Professional"
+        if not title:
+            title = "Experienced Professional"
+        if not skills:
+            skills = ["Communication", "Problem Solving", "Teamwork"]
+        if not achievements:
+            achievements = ["Successfully delivered projects on time", "Collaborated with cross-functional teams"]
+        if not traits:
+            traits = ["professional", "dedicated", "team-player"]
+
+        return ParsedResumeData(
+            name=name,
+            title=title,
+            skills=skills[:15],  # Limit to 15 skills
+            years_of_experience=years,
+            top_achievements=achievements[:5],  # Limit to 5 achievements
+            personality_traits=traits[:5]  # Limit to 5 traits
+        )
 
     def _build_project_prompt(self, request: GenerateProjectDescriptionRequest) -> str:
         """Build prompt for project description generation."""

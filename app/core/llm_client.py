@@ -104,4 +104,13 @@ async def generate_text(prompt: str) -> str:
     else:
         # For actual LLMs, use invoke or a chain
         # For simplicity, directly calling invoke for now
-        return llm.invoke(prompt)
+        response = llm.invoke(prompt)
+        # Handle both string responses and AIMessage objects
+        if isinstance(response, str):
+            return response
+        elif hasattr(response, 'content'):
+            # AIMessage or similar object
+            return response.content
+        else:
+            # Fallback to string conversion
+            return str(response)

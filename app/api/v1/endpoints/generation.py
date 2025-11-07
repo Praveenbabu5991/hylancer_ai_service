@@ -1,5 +1,5 @@
 # app/api/v1/endpoints/generation.py
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, status, UploadFile, File
 from loguru import logger
 
 from app.services.generation_service import GenerationService
@@ -8,7 +8,10 @@ from app.schemas.generation import (
     GenerateProjectDescriptionResponse,
     GenerateBioDescriptionRequest,
     GenerateBioDescriptionResponse,
+    GenerateBioFromResumeRequest,
+    GenerateBioFromResumeResponse,
 )
+from app.utils.file_extractor import extract_text_from_file
 
 router = APIRouter()
 
@@ -111,3 +114,113 @@ async def generate_bio_description(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to generate bio description: {str(e)}"
         )
+
+
+@router.post(
+    "/generate_bio_from_resume",
+    response_model=GenerateBioFromResumeResponse,
+    summary="Generate Bio from Resume File",
+    description="Upload a resume file (PDF, DOCX, TXT) and generate a professional bio using AI"
+)
+async def generate_bio_from_resume(
+    file: UploadFile = File(..., description="Resume file (PDF, DOCX, or TXT format)"),
+    service: GenerationService = None
+):
+    """
+    Parse a resume file and generate a professional bio for a hylancer using AI.
+
+    This endpoint:
+    1. Accepts a resume file upload (PDF, DOCX, or TXT)
+    2. Extracts text from the file
+    3. Parses the resume to extract structured information (name, title, skills, experience, achievements)
+    4. Generates a professional bio based on the extracted data
+    5. Returns the bio along with the parsed data for transparency
+
+    Creates:
+    - A professional bio (150-250 words)
+    - A compelling headline
+    - Suggested hourly rate
+    - Experience level (1-5)
+    - Parsed resume data (name, title, skills, years of experience, achievements, traits)
+
+    Supported file formats:
+    - PDF (.pdf)
+    - Microsoft Word (.docx, .doc)
+    - Plain Text (.txt)
+
+    File size limit: 10 MB
+    """
+    # Validate file size (10 MB limit)
+    MAX_FILE_SIZE = 10 * 1024 * 1024  # 10 MB in bytes
+
+    try:
+        # Read file content
+        file_content = await file.read()
+
+        if len(file_content) > MAX_FILE_SIZE:
+            raise HTTPException(
+                status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                detail=f"File size exceeds 10 MB limit. File size: {len(file_content) / (1024 * 1024):.2f} MB"
+            )
+
+        if len(file_content) == 0:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Uploaded file is empty"
+            )
+
+        logger.info(f"Processing resume file: {file.filename} ({len(file_content) / 1024:.2f} KB)")
+
+        # Extract text from file
+        try:
+            resume_text = await extract_text_from_file(file_content, file.filename)
+        except ValueError as e:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=str(e)
+            )
+        except ImportError as e:
+            logger.error(f"Missing required library: {e}")
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Server configuration error: missing required file parsing library"
+            )
+
+        # Validate extracted text
+        if len(resume_text.strip()) < 50:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Extracted text is too short ({len(resume_text)} characters). Please ensure the resume has sufficient content."
+            )
+
+        logger.info(f"Extracted {len(resume_text)} characters from resume")
+
+        # Create request object
+        request = GenerateBioFromResumeRequest(resume_text=resume_text)
+
+        # Generate bio from resume
+        if service is None:
+            service = await get_generation_service()
+
+        response = await service.generate_bio_from_resume(request)
+
+        logger.info(f"Successfully generated bio from resume for: {response.parsed_data.name}")
+        return response
+
+    except HTTPException:
+        raise
+    except ValueError as e:
+        logger.error(f"Validation error in bio generation from resume: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        logger.exception(f"Error generating bio from resume: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to generate bio from resume: {str(e)}"
+        )
+    finally:
+        # Close the file
+        await file.close()

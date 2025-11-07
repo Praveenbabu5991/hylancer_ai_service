@@ -62,3 +62,31 @@ class GenerateBioDescriptionResponse(BaseModel):
     headline: str
     suggested_hourly_rate: float
     experience_level: int  # 1-5
+
+class GenerateBioFromResumeRequest(BaseModel):
+    """
+    Request to generate bio description from a resume.
+
+    Example:
+    {
+        "resume_text": "John Doe\\nSenior Software Engineer\\n\\nExperience:\\n- 5 years at Google..."
+    }
+    """
+    resume_text: str = Field(..., min_length=50, description="Resume text content (minimum 50 characters)")
+
+class ParsedResumeData(BaseModel):
+    """Structured data parsed from a resume."""
+    name: str
+    title: str
+    skills: List[str]
+    years_of_experience: int
+    top_achievements: List[str]
+    personality_traits: Optional[List[str]] = []
+
+class GenerateBioFromResumeResponse(BaseModel):
+    """Response with generated bio from resume."""
+    bio: str
+    headline: str
+    suggested_hourly_rate: float
+    experience_level: int  # 1-5
+    parsed_data: ParsedResumeData  # Include parsed resume data for transparency
