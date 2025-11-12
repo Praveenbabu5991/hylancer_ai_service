@@ -10,6 +10,8 @@ from app.schemas.generation import (
     GenerateBioDescriptionResponse,
     GenerateBioFromResumeRequest,
     GenerateBioFromResumeResponse,
+    KnowYourWorthRequest,
+    KnowYourWorthResponse,
 )
 from app.utils.file_extractor import extract_text_from_file
 
@@ -238,3 +240,81 @@ async def generate_bio_from_resume(
     finally:
         # Close the file
         await file.close()
+
+
+@router.post(
+    "/know_your_worth",
+    response_model=KnowYourWorthResponse,
+    summary="Know Your Worth Calculator",
+    description="Calculate freelancer worth in Indian market context with AI-powered insights"
+)
+async def know_your_worth(
+    request: KnowYourWorthRequest = Body(
+        ...,
+        example={
+            "name": "Rahul Sharma",
+            "skills": ["Python", "Django", "React", "AWS", "Docker", "PostgreSQL"],
+            "years_of_experience": 5,
+            "specialization": "Full-Stack Development",
+            "city": "Bangalore",
+            "education_level": "Bachelor's",
+            "english_proficiency": "Fluent",
+            "certifications": ["AWS Certified Solutions Architect", "Google Cloud Professional"],
+            "portfolio_projects": 12,
+            "client_reviews_average": 4.8
+        }
+    )
+):
+    """
+    Calculate freelancer worth in Indian market context.
+
+    This endpoint:
+    1. Calculates estimated hourly rate based on multiple factors
+    2. Considers Indian market dynamics (location, skills demand, etc.)
+    3. Provides detailed breakdown of worth calculation
+    4. Offers AI-powered market insights and positioning
+    5. Gives personalized recommendations to increase earning potential
+
+    Factors considered:
+    - Years of experience and specialization
+    - Skills (with premium for high-demand technologies)
+    - Location (Tier 1, 2, 3 cities in India)
+    - Education level (Bachelor's, Master's, PhD)
+    - Professional certifications
+    - Portfolio size and quality
+    - Client reviews and reputation
+
+    Returns:
+    - Estimated hourly rate (INR and USD)
+    - Monthly and annual earning potential
+    - Detailed breakdown of calculation factors
+    - Market insights (tier, position, demand level)
+    - Competitive advantages
+    - Personalized recommendations
+    - Comparison with market average
+
+    Example request:
+    {
+        "name": "Rahul Sharma",
+        "skills": ["Python", "Django", "React", "AWS"],
+        "years_of_experience": 5,
+        "specialization": "Full-Stack Development",
+        "city": "Bangalore",
+        "education_level": "Bachelor's",
+        "english_proficiency": "Fluent",
+        "certifications": ["AWS Certified", "Google Cloud Professional"],
+        "portfolio_projects": 12,
+        "client_reviews_average": 4.8
+    }
+    """
+    try:
+        service = await get_generation_service()
+        logger.info(f"Calculating worth for: {request.name}")
+        response = await service.calculate_freelancer_worth(request)
+        return response
+    except Exception as e:
+        logger.exception(f"Error calculating freelancer worth: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to calculate freelancer worth: {str(e)}"
+        )

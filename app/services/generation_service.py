@@ -9,6 +9,10 @@ from app.schemas.generation import (
     GenerateBioFromResumeRequest,
     GenerateBioFromResumeResponse,
     ParsedResumeData,
+    KnowYourWorthRequest,
+    KnowYourWorthResponse,
+    WorthBreakdown,
+    MarketInsights,
 )
 from app.core.llm_client import generate_text
 
@@ -494,3 +498,475 @@ LEVEL: [experience level as number 1-5]"""
             suggested_hourly_rate=float(rate),
             experience_level=level
         )
+
+    async def calculate_freelancer_worth(
+        self,
+        request: KnowYourWorthRequest
+    ) -> KnowYourWorthResponse:
+        """
+        Calculate freelancer worth in Indian market context.
+
+        This method:
+        1. Calculates base rate based on experience and specialization
+        2. Applies multipliers for skills, location, education, certifications, portfolio
+        3. Provides market insights using AI
+        4. Gives personalized recommendations
+
+        Args:
+            request: KnowYourWorthRequest with freelancer details
+
+        Returns:
+            KnowYourWorthResponse with worth calculation and insights
+        """
+        logger.info(f"Calculating worth for: {request.name}")
+
+        # Step 1: Calculate base rate (INR per hour)
+        base_rate = self._calculate_base_rate(
+            request.years_of_experience,
+            request.specialization
+        )
+
+        # Step 2: Calculate multipliers
+        experience_multiplier = self._calculate_experience_multiplier(request.years_of_experience)
+        skill_premium = self._calculate_skill_premium(request.skills)
+        location_adjustment = self._calculate_location_adjustment(request.city)
+        education_bonus = self._calculate_education_bonus(request.education_level)
+        certification_bonus = self._calculate_certification_bonus(request.certifications)
+        portfolio_bonus = self._calculate_portfolio_bonus(request.portfolio_projects)
+        reputation_bonus = self._calculate_reputation_bonus(request.client_reviews_average)
+
+        # Step 3: Calculate final hourly rate
+        hourly_rate_inr = (
+            base_rate *
+            (1 + experience_multiplier) *
+            (1 + skill_premium) *
+            (1 + location_adjustment) +
+            education_bonus +
+            certification_bonus +
+            portfolio_bonus +
+            reputation_bonus
+        )
+
+        # Round to nearest 50
+        hourly_rate_inr = round(hourly_rate_inr / 50) * 50
+
+        # Convert to USD (approximate rate: 1 USD = 83 INR)
+        hourly_rate_usd = round(hourly_rate_inr / 83, 2)
+
+        # Calculate earning potential
+        monthly_potential = hourly_rate_inr * 160  # 160 hours/month
+        annual_potential = monthly_potential * 12
+
+        # Step 4: Create worth breakdown
+        worth_breakdown = WorthBreakdown(
+            base_rate=base_rate,
+            experience_multiplier=experience_multiplier,
+            skill_premium=skill_premium,
+            location_adjustment=location_adjustment,
+            education_bonus=education_bonus,
+            certification_bonus=certification_bonus,
+            portfolio_bonus=portfolio_bonus,
+            reputation_bonus=reputation_bonus
+        )
+
+        # Step 5: Generate market insights using LLM
+        market_insights = await self._generate_market_insights(request, hourly_rate_inr)
+
+        # Step 6: Generate comparison message
+        comparison_message = self._generate_comparison_message(
+            request.years_of_experience,
+            hourly_rate_inr,
+            request.city
+        )
+
+        # Step 7: Generate recommendations
+        recommendations = await self._generate_recommendations(request, hourly_rate_inr)
+
+        logger.info(f"Calculated worth for {request.name}: ₹{hourly_rate_inr}/hr")
+
+        return KnowYourWorthResponse(
+            estimated_hourly_rate_inr=hourly_rate_inr,
+            estimated_hourly_rate_usd=hourly_rate_usd,
+            monthly_earning_potential_inr=monthly_potential,
+            annual_earning_potential_inr=annual_potential,
+            worth_breakdown=worth_breakdown,
+            market_insights=market_insights,
+            comparison_message=comparison_message,
+            recommendations=recommendations
+        )
+
+    def _calculate_base_rate(self, years_of_experience: int, specialization: str) -> float:
+        """Calculate base hourly rate in INR based on experience and specialization."""
+        # Base rates for different specializations in India (INR/hour)
+        specialization_rates = {
+            "data science": 800,
+            "machine learning": 850,
+            "ai": 900,
+            "blockchain": 950,
+            "full-stack": 700,
+            "backend": 650,
+            "frontend": 600,
+            "mobile": 650,
+            "devops": 750,
+            "cloud": 750,
+            "cybersecurity": 850,
+            "ui/ux": 550,
+            "graphic design": 450,
+            "content writing": 350,
+            "digital marketing": 500,
+            "default": 600
+        }
+
+        # Find matching specialization (case-insensitive, partial match)
+        spec_lower = specialization.lower()
+        base_rate = specialization_rates["default"]
+
+        for key, rate in specialization_rates.items():
+            if key in spec_lower or spec_lower in key:
+                base_rate = rate
+                break
+
+        # Adjust for experience (0-2 years get lower base)
+        if years_of_experience < 1:
+            base_rate *= 0.5
+        elif years_of_experience < 2:
+            base_rate *= 0.7
+
+        return base_rate
+
+    def _calculate_experience_multiplier(self, years: int) -> float:
+        """Calculate experience multiplier (0.0 to 1.0+)."""
+        if years < 1:
+            return 0.0
+        elif years < 2:
+            return 0.1
+        elif years < 3:
+            return 0.2
+        elif years < 5:
+            return 0.3
+        elif years < 7:
+            return 0.45
+        elif years < 10:
+            return 0.6
+        else:
+            return 0.8 + min((years - 10) * 0.05, 0.5)
+
+    def _calculate_skill_premium(self, skills: list) -> float:
+        """Calculate skill premium based on demand (0.0 to 0.5)."""
+        # High-demand skills in Indian market
+        premium_skills = {
+            "react", "node.js", "python", "aws", "docker", "kubernetes",
+            "typescript", "golang", "rust", "machine learning", "ai",
+            "tensorflow", "pytorch", "blockchain", "solidity", "flutter",
+            "react native", "next.js", "graphql", "mongodb", "postgresql",
+            "redis", "kafka", "microservices", "system design"
+        }
+
+        skill_count = sum(1 for skill in skills if skill.lower() in premium_skills)
+        return min(skill_count * 0.05, 0.5)
+
+    def _calculate_location_adjustment(self, city: str) -> float:
+        """Calculate location-based adjustment for Indian cities (-0.2 to 0.3)."""
+        city_lower = city.lower()
+
+        # Tier 1 cities (higher rates)
+        tier1 = ["bangalore", "bengaluru", "mumbai", "delhi", "ncr", "gurgaon", "noida", "hyderabad", "pune"]
+        # Tier 2 cities (moderate rates)
+        tier2 = ["chennai", "kolkata", "ahmedabad", "jaipur", "chandigarh", "kochi", "indore"]
+
+        if any(t1 in city_lower for t1 in tier1):
+            return 0.2
+        elif any(t2 in city_lower for t2 in tier2):
+            return 0.05
+        else:
+            return -0.1  # Tier 3 cities
+
+    def _calculate_education_bonus(self, education: str) -> float:
+        """Calculate education bonus in INR/hour."""
+        education_lower = education.lower()
+
+        if "phd" in education_lower or "doctorate" in education_lower:
+            return 150
+        elif "master" in education_lower or "msc" in education_lower or "mtech" in education_lower:
+            return 100
+        elif "bachelor" in education_lower or "btech" in education_lower or "bsc" in education_lower:
+            return 50
+        else:
+            return 0
+
+    def _calculate_certification_bonus(self, certifications: list) -> float:
+        """Calculate certification bonus in INR/hour."""
+        if not certifications:
+            return 0
+
+        # Bonus per certification, capped at 5
+        cert_count = min(len(certifications), 5)
+        return cert_count * 50
+
+    def _calculate_portfolio_bonus(self, projects: int) -> float:
+        """Calculate portfolio bonus in INR/hour."""
+        if projects == 0:
+            return 0
+        elif projects < 5:
+            return 25
+        elif projects < 10:
+            return 50
+        elif projects < 20:
+            return 75
+        else:
+            return 100
+
+    def _calculate_reputation_bonus(self, rating: float) -> float:
+        """Calculate reputation bonus based on client reviews in INR/hour."""
+        if rating == 0:
+            return 0
+        elif rating >= 4.8:
+            return 100
+        elif rating >= 4.5:
+            return 75
+        elif rating >= 4.0:
+            return 50
+        elif rating >= 3.5:
+            return 25
+        else:
+            return 0
+
+    async def _generate_market_insights(
+        self,
+        request: KnowYourWorthRequest,
+        hourly_rate: float
+    ) -> MarketInsights:
+        """Generate market insights using LLM."""
+        logger.info("Generating market insights with AI")
+
+        # Determine tier
+        if request.years_of_experience < 2:
+            tier = "Entry-Level"
+        elif request.years_of_experience < 5:
+            tier = "Mid-Level"
+        elif request.years_of_experience < 10:
+            tier = "Senior"
+        else:
+            tier = "Expert"
+
+        # Build prompt for LLM
+        skills_str = ", ".join(request.skills)
+        certs_str = ", ".join(request.certifications) if request.certifications else "None"
+
+        prompt = f"""You are an expert freelance market analyst for India. Analyze this freelancer profile and provide insights.
+
+Freelancer Profile:
+- Specialization: {request.specialization}
+- Years of Experience: {request.years_of_experience}
+- Skills: {skills_str}
+- City: {request.city}
+- Education: {request.education_level}
+- Certifications: {certs_str}
+- Portfolio Projects: {request.portfolio_projects}
+- Client Rating: {request.client_reviews_average}/5.0
+- Estimated Hourly Rate: ₹{hourly_rate}
+
+Provide insights in this EXACT format:
+
+POSITION: [market position as percentile, e.g., "Top 30%", "Top 50%", etc.]
+DEMAND: [demand level: "Low", "Medium", "High", or "Very High"]
+ADVANTAGES:
+- [competitive advantage 1]
+- [competitive advantage 2]
+- [competitive advantage 3]
+IMPROVEMENTS:
+- [improvement suggestion 1]
+- [improvement suggestion 2]
+- [improvement suggestion 3]
+
+Keep each point concise (max 15 words). Focus on Indian freelance market context."""
+
+        try:
+            response_text = await generate_text(prompt)
+            insights_data = self._parse_market_insights_response(response_text)
+
+            return MarketInsights(
+                tier=tier,
+                market_position=insights_data["position"],
+                demand_level=insights_data["demand"],
+                competitive_advantage=insights_data["advantages"],
+                improvement_suggestions=insights_data["improvements"]
+            )
+
+        except Exception as e:
+            logger.exception(f"Error generating market insights: {e}")
+            # Return fallback insights
+            return MarketInsights(
+                tier=tier,
+                market_position="Top 50%",
+                demand_level="Medium",
+                competitive_advantage=[
+                    f"Strong foundation in {request.specialization}",
+                    f"Located in {request.city}",
+                    "Good skill diversity"
+                ],
+                improvement_suggestions=[
+                    "Build more portfolio projects",
+                    "Obtain industry certifications",
+                    "Improve client ratings"
+                ]
+            )
+
+    def _parse_market_insights_response(self, response_text: str) -> dict:
+        """Parse LLM response for market insights."""
+        lines = response_text.strip().split("\n")
+
+        position = "Top 50%"
+        demand = "Medium"
+        advantages = []
+        improvements = []
+
+        current_section = None
+
+        for line in lines:
+            line = line.strip()
+
+            if line.startswith("POSITION:"):
+                position = line.replace("POSITION:", "").strip()
+            elif line.startswith("DEMAND:"):
+                demand = line.replace("DEMAND:", "").strip()
+            elif line.startswith("ADVANTAGES:"):
+                current_section = "advantages"
+            elif line.startswith("IMPROVEMENTS:"):
+                current_section = "improvements"
+            elif line.startswith("-") and current_section:
+                item = line.lstrip("- ").strip()
+                if item:
+                    if current_section == "advantages":
+                        advantages.append(item)
+                    elif current_section == "improvements":
+                        improvements.append(item)
+
+        # Ensure at least some content
+        if not advantages:
+            advantages = ["Good technical skills", "Relevant experience", "Market presence"]
+        if not improvements:
+            improvements = ["Expand skill set", "Build portfolio", "Get certifications"]
+
+        return {
+            "position": position,
+            "demand": demand,
+            "advantages": advantages[:5],
+            "improvements": improvements[:5]
+        }
+
+    def _generate_comparison_message(
+        self,
+        years_of_experience: int,
+        hourly_rate: float,
+        city: str
+    ) -> str:
+        """Generate comparison message for the freelancer."""
+        # Average rates by experience in India
+        if years_of_experience < 2:
+            avg_low = 300
+            avg_high = 600
+            category = "entry-level"
+        elif years_of_experience < 5:
+            avg_low = 600
+            avg_high = 1000
+            category = "mid-level"
+        elif years_of_experience < 10:
+            avg_low = 1000
+            avg_high = 1800
+            category = "senior"
+        else:
+            avg_low = 1500
+            avg_high = 2500
+            category = "expert"
+
+        avg_rate = (avg_low + avg_high) / 2
+
+        if hourly_rate > avg_high:
+            position = "above"
+            percentage = round(((hourly_rate - avg_rate) / avg_rate) * 100)
+            message = f"Your rate of ₹{hourly_rate:.0f}/hr is {percentage}% above the average for {category} freelancers in {city} (₹{avg_low}-₹{avg_high}/hr)."
+        elif hourly_rate < avg_low:
+            position = "below"
+            percentage = round(((avg_rate - hourly_rate) / avg_rate) * 100)
+            message = f"Your rate of ₹{hourly_rate:.0f}/hr is {percentage}% below the average for {category} freelancers in {city} (₹{avg_low}-₹{avg_high}/hr)."
+        else:
+            message = f"Your rate of ₹{hourly_rate:.0f}/hr is within the average range for {category} freelancers in {city} (₹{avg_low}-₹{avg_high}/hr)."
+
+        return message
+
+    async def _generate_recommendations(
+        self,
+        request: KnowYourWorthRequest,
+        hourly_rate: float
+    ) -> list:
+        """Generate personalized recommendations using LLM."""
+        logger.info("Generating personalized recommendations")
+
+        skills_str = ", ".join(request.skills)
+        certs_str = ", ".join(request.certifications) if request.certifications else "None"
+
+        prompt = f"""You are a career advisor for Indian freelancers. Provide actionable recommendations to increase earning potential.
+
+Profile:
+- Specialization: {request.specialization}
+- Experience: {request.years_of_experience} years
+- Skills: {skills_str}
+- City: {request.city}
+- Certifications: {certs_str}
+- Portfolio: {request.portfolio_projects} projects
+- Rating: {request.client_reviews_average}/5.0
+- Current Rate: ₹{hourly_rate}/hr
+
+Provide 5 specific, actionable recommendations to increase their worth. Format as:
+
+RECOMMENDATIONS:
+- [recommendation 1]
+- [recommendation 2]
+- [recommendation 3]
+- [recommendation 4]
+- [recommendation 5]
+
+Each recommendation should be:
+1. Specific and actionable
+2. Relevant to Indian market
+3. Max 20 words
+4. Focus on skills, certifications, or market positioning"""
+
+        try:
+            response_text = await generate_text(prompt)
+            recommendations = self._parse_recommendations_response(response_text)
+            return recommendations
+
+        except Exception as e:
+            logger.exception(f"Error generating recommendations: {e}")
+            # Return fallback recommendations
+            return [
+                "Build a strong portfolio with 3-5 showcase projects",
+                "Obtain relevant certifications (AWS, Google Cloud, or domain-specific)",
+                "Improve English communication skills for international clients",
+                "Specialize in high-demand technologies (AI, Cloud, Blockchain)",
+                "Request client testimonials to boost your reputation"
+            ]
+
+    def _parse_recommendations_response(self, response_text: str) -> list:
+        """Parse LLM response for recommendations."""
+        lines = response_text.strip().split("\n")
+        recommendations = []
+
+        for line in lines:
+            line = line.strip()
+            if line.startswith("-"):
+                rec = line.lstrip("- ").strip()
+                if rec:
+                    recommendations.append(rec)
+
+        # Ensure at least 3 recommendations
+        if len(recommendations) < 3:
+            recommendations.extend([
+                "Expand your skill set with in-demand technologies",
+                "Build a professional online presence",
+                "Network with other freelancers and clients"
+            ])
+
+        return recommendations[:5]

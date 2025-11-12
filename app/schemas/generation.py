@@ -90,3 +90,62 @@ class GenerateBioFromResumeResponse(BaseModel):
     suggested_hourly_rate: float
     experience_level: int  # 1-5
     parsed_data: ParsedResumeData  # Include parsed resume data for transparency
+
+class KnowYourWorthRequest(BaseModel):
+    """
+    Request to calculate freelancer worth in Indian context.
+
+    Example:
+    {
+        "name": "Rahul Sharma",
+        "skills": ["Python", "Django", "React", "AWS"],
+        "years_of_experience": 5,
+        "specialization": "Full-Stack Development",
+        "city": "Bangalore",
+        "education_level": "Bachelor's",
+        "english_proficiency": "Fluent",
+        "certifications": ["AWS Certified", "Google Cloud Professional"],
+        "portfolio_projects": 12,
+        "client_reviews_average": 4.8
+    }
+    """
+    name: str = Field(..., min_length=2, description="Freelancer name")
+    skills: List[str] = Field(..., min_items=1, max_items=20, description="Technical skills")
+    years_of_experience: int = Field(..., ge=0, le=50, description="Years of professional experience")
+    specialization: str = Field(..., min_length=3, description="Primary specialization/domain")
+    city: str = Field(..., min_length=2, description="City in India")
+    education_level: str = Field(..., description="Education level: High School, Bachelor's, Master's, PhD")
+    english_proficiency: str = Field(..., description="English proficiency: Basic, Intermediate, Fluent, Native")
+    certifications: Optional[List[str]] = Field(default=[], description="Professional certifications")
+    portfolio_projects: Optional[int] = Field(default=0, ge=0, description="Number of portfolio projects")
+    client_reviews_average: Optional[float] = Field(default=0.0, ge=0.0, le=5.0, description="Average client rating (0-5)")
+
+class WorthBreakdown(BaseModel):
+    """Breakdown of worth calculation factors."""
+    base_rate: float
+    experience_multiplier: float
+    skill_premium: float
+    location_adjustment: float
+    education_bonus: float
+    certification_bonus: float
+    portfolio_bonus: float
+    reputation_bonus: float
+
+class MarketInsights(BaseModel):
+    """Market insights for the freelancer."""
+    tier: str  # "Entry-Level", "Mid-Level", "Senior", "Expert"
+    market_position: str  # Percentile position
+    demand_level: str  # "Low", "Medium", "High", "Very High"
+    competitive_advantage: List[str]
+    improvement_suggestions: List[str]
+
+class KnowYourWorthResponse(BaseModel):
+    """Response with freelancer worth calculation."""
+    estimated_hourly_rate_inr: float
+    estimated_hourly_rate_usd: float
+    monthly_earning_potential_inr: float  # Based on 160 hours/month
+    annual_earning_potential_inr: float
+    worth_breakdown: WorthBreakdown
+    market_insights: MarketInsights
+    comparison_message: str
+    recommendations: List[str]
