@@ -61,9 +61,7 @@ def run_migrations_online() -> None:
     configuration = config.get_section(config.config_ini_section)
 
     # IMPORTANT: For Alembic's synchronous operations, use psycopg2 driver
-    # This logic assumes Alembic is run from the host machine.
     alembic_db_url = settings.DATABASE_URL.replace("postgresql+asyncpg", "postgresql+psycopg2")
-    alembic_db_url = alembic_db_url.replace("postgres:5433", "localhost:5433") # Connect to host's exposed port
 
     configuration["sqlalchemy.url"] = alembic_db_url
 
