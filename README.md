@@ -29,13 +29,138 @@ This is an AI microservice built with FastAPI and LangChain, designed to provide
 - **Logging:** `loguru`
 - **Testing:** `pytest`, `FastAPI TestClient`
 
-## Setup and Installation
+## Quick Start
 
-For detailed setup and installation instructions, please refer to the [Quick Start Guide](quick_start_guide.md).
+### Prerequisites
+- Docker and Docker Compose installed
+- OpenAI API key (or Gemini/Bedrock credentials)
 
-## Usage
+### Option 1: Container Mode (Recommended for Quick Start)
 
-For details on how to use the API and its endpoints, please refer to the [Quick Start Guide](quick_start_guide.md).
+1. **Clone and configure**:
+   ```bash
+   git clone <repository-url>
+   cd hylancer-ai-service
+   cp .env.example .env
+   ```
+
+2. **Add your API keys** to `.env`:
+   ```env
+   OPENAI_API_KEY=your_key_here
+   # Or use Gemini:
+   # LLM_PROVIDER=gemini
+   # GOOGLE_API_KEY=your_key_here
+   ```
+
+3. **Start the service**:
+   ```bash
+   docker-compose up
+   ```
+
+4. **Access the API**:
+   - API Documentation: http://localhost:8000/docs
+   - Health Check: http://localhost:8000/health
+
+**That's it!** Database and tables are created automatically.
+
+### Option 2: Local PostgreSQL Mode
+
+If you want to use your local PostgreSQL instead of the container:
+
+1. **Install pgvector** (one-time):
+   ```bash
+   ./scripts/install_pgvector.sh
+   ```
+
+2. **Configure PostgreSQL** for Docker (one-time):
+   ```bash
+   ./scripts/configure_postgres_docker.sh
+   ./scripts/fix_docker_network.sh
+   ```
+
+3. **Update `.env`** to use local PostgreSQL:
+   ```env
+   # Use your postgres superuser credentials
+   DATABASE_URL=postgresql+asyncpg://postgres:your_password@host.docker.internal:5432/hylancer_ai
+   ```
+
+4. **Start the service**:
+   ```bash
+   docker-compose up
+   ```
+
+**Database auto-created!** No manual setup needed.
+
+For detailed setup instructions and troubleshooting, see [DATABASE_SETUP.md](DATABASE_SETUP.md).
+
+## Deployment
+
+### AWS ECR Deployment
+
+1. **Build the image**:
+   ```bash
+   docker build -t hylancer-ai-service .
+   ```
+
+2. **Tag and push to ECR**:
+   ```bash
+   aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin <account-id>.dkr.ecr.us-east-1.amazonaws.com
+   docker tag hylancer-ai-service:latest <account-id>.dkr.ecr.us-east-1.amazonaws.com/hylancer-ai-service:latest
+   docker push <account-id>.dkr.ecr.us-east-1.amazonaws.com/hylancer-ai-service:latest
+   ```
+
+3. **Configure environment**:
+   - Set `DATABASE_URL` to AWS RDS PostgreSQL endpoint
+   - Ensure RDS has pgvector extension installed
+   - Set API keys via AWS Secrets Manager or environment variables
+
+4. **Deploy** via ECS, EKS, or EC2
+
+### Environment Variables
+
+Required in `.env` or production environment:
+
+```env
+# LLM Provider
+LLM_PROVIDER=openai
+OPENAI_API_KEY=your_key
+
+# Database (auto-created on startup)
+DATABASE_URL=postgresql+asyncpg://user:password@host:5432/database
+
+# Optional: Internal microservices
+USER_SERVICE_URL=http://user-management:8085
+PROJECT_SERVICE_URL=http://project-management:8084
+```
+
+## API Usage
+
+### Interactive Documentation
+Visit http://localhost:8000/docs for interactive API documentation.
+
+### Example: Generate Freelancer Bio
+```bash
+curl -X POST "http://localhost:8000/api/v1/generation/generate-bio" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "user_id": "123",
+    "skills": ["Python", "FastAPI", "PostgreSQL"],
+    "experience_years": 5
+  }'
+```
+
+### Example: Get Freelancer Recommendations
+```bash
+curl -X POST "http://localhost:8000/api/v1/recommendations/freelancers" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "project_id": "456",
+    "project_description": "Need Python developer for API development",
+    "required_skills": ["Python", "FastAPI"]
+  }'
+```
+
+For more examples, see [Quick Start Guide](quick_start_guide.md).
 
 ## Development
 
