@@ -14,18 +14,18 @@ class FreelancerEmbedding(Base):
     bio_embedding = Column(Vector(1536))  # OpenAI: 1536, Gemini: 768 (update via migration)
     past_project_embedding = Column(Vector(1536), nullable=True)
     skills = Column(JSONB, nullable=False)  # Array of skills ["React", "Node.js", ...]
-    success_rate = Column(Float, nullable=False)
-    client_satisfaction = Column(Float, nullable=False)
-    communication_score = Column(Float, nullable=False)
-    hourly_rate = Column(DECIMAL(10, 2), nullable=False)
-    availability_status = Column(String(20), nullable=False, default='available')  # 'available', 'busy', 'unavailable'
+    success_rate = Column(Float, nullable=True)
+    client_satisfaction = Column(Float, nullable=True)
+    communication_score = Column(Float, nullable=True)
+    hourly_rate = Column(DECIMAL(10, 2), nullable=True)
+    availability_status = Column(String(20), nullable=True, default='available')  # 'available', 'busy', 'unavailable'
     location = Column(String(255), nullable=True)
-    experience_level = Column(Integer, nullable=False)  # 1-5 scale
-    total_projects = Column(Integer, nullable=False, default=0)
+    experience_level = Column(Integer, nullable=True)  # 1-5 scale
+    total_projects = Column(Integer, nullable=True, default=0)
     embedding_model = Column(String(50), nullable=False)  # 'openai-text-embedding-3-large', 'gemini-embedding-001'
     embedding_version = Column(String(20), nullable=False)
     data_quality_score = Column(Float, nullable=False)  # Profile completeness (0.0-1.0)
-    meta_info = Column(JSONB, nullable=False)  # {is_new_freelancer, has_past_projects, feedback_count}
+    meta_info = Column(JSONB, nullable=True)  # {is_new_freelancer, has_past_projects, feedback_count}
     created_at = Column(DateTime(timezone=True), default=func.now(), nullable=False)
     last_updated = Column(DateTime(timezone=True), onupdate=func.now(), default=func.now(), nullable=False)
 

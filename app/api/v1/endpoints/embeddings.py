@@ -9,6 +9,7 @@ from app.core.postgres_client import PostgresClient
 from app.services.embedding_service import HylancerEmbeddingService, ProjectEmbeddingService
 from app.schemas.embeddings import (
     HylancerEmbeddingCreateRequest,
+    HylancerEmbeddingUpdateRequest,
     HylancerEmbeddingResponse,
     HylancerEmbeddingStatusResponse,
     HylancerEmbeddingDeleteResponse,
@@ -51,22 +52,8 @@ async def create_hylancer_embedding(
         ...,
         example={
             "hylancer_id": "7c573112-87c5-4b08-b393-91a6b25ad7e4",
-            "bio": "Experienced software engineer with a passion for building scalable web applications. Proficient in Python, JavaScript, and various frameworks. Proven track record of delivering high-quality code and leading successful projects.",
-            "past_projects": "Developed a full-stack e-commerce platform using React and Node.js. Implemented a real-time chat application with WebSockets. Contributed to an open-source data visualization library.",
-            "skills": ["Python", "JavaScript", "React", "Node.js", "PostgreSQL", "Docker"],
-            "success_rate": 0.95,
-            "client_satisfaction": 0.92,
-            "communication_score": 0.98,
-            "hourly_rate": 75.0,
-            "availability_status": "available",
-            "location": "Remote",
-            "experience_level": 4,
-            "total_projects": 15,
-            "metadata": {
-                "is_new_hylancer": False,
-                "has_past_projects": True,
-                "feedback_count": 25
-            }
+            "bio": "Experienced software engineer.",
+            "skills": ["Python"],
         }
     ),
     service: HylancerEmbeddingService = Depends(get_hylancer_embedding_service)
@@ -92,40 +79,19 @@ async def create_hylancer_embedding(
 )
 async def update_hylancer_embedding(
     hylancer_id: UUID,
-    request: HylancerEmbeddingCreateRequest = Body(
+    request: HylancerEmbeddingUpdateRequest = Body(
         ...,
         example={
-            "hylancer_id": "7c573112-87c5-4b08-b393-91a6b25ad7e4",
-            "bio": "Experienced software engineer with a passion for building scalable web applications. Proficient in Python, JavaScript, and various frameworks. Proven track record of delivering high-quality code and leading successful projects.",
-            "past_projects": "Developed a full-stack e-commerce platform using React and Node.js. Implemented a real-time chat application with WebSockets. Contributed to an open-source data visualization library.",
-            "skills": ["Python", "JavaScript", "React", "Node.js", "PostgreSQL", "Docker"],
-            "success_rate": 0.95,
-            "client_satisfaction": 0.92,
-            "communication_score": 0.98,
-            "hourly_rate": 75.0,
-            "availability_status": "available",
-            "location": "Remote",
-            "experience_level": 4,
-            "total_projects": 15,
-            "metadata": {
-                "is_new_hylancer": False,
-                "has_past_projects": True,
-                "feedback_count": 25
-            }
+            "bio": "Updated bio.",
+            "skills": ["Python", "Go"],
         }
     ),
     service: HylancerEmbeddingService = Depends(get_hylancer_embedding_service)
 ):
     """Update hylancer embedding."""
-    if hylancer_id != request.hylancer_id:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Hylancer ID in path and body do not match"
-        )
-
     try:
         logger.info(f"Received request to update embedding for hylancer_id: {hylancer_id}")
-        response = await service.create_or_update_embedding(request)
+        response = await service.update_embedding(hylancer_id, request)
         return response
     except Exception as e:
         logger.exception(f"Error updating hylancer embedding: {e}")

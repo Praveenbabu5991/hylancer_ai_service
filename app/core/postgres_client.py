@@ -4,7 +4,7 @@ from uuid import UUID
 import uuid
 import time
 from datetime import datetime
-from sqlalchemy import select, func, delete
+from sqlalchemy import select, func, delete, update
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 from loguru import logger
@@ -76,6 +76,30 @@ class PostgresClient:
         await self.db_session.execute(do_update_stmt)
         await self.db_session.commit()
         return True
+
+    async def update_freelancer_embedding_partial(
+        self,
+        freelancer_id: UUID,
+        update_data: Dict[str, Any]
+    ) -> bool:
+        """Update freelancer embedding with partial data."""
+        # Filter out None values
+        update_values = {k: v for k, v in update_data.items() if v is not None}
+        
+        if not update_values:
+            return True
+
+        update_values["last_updated"] = func.now()
+
+        stmt = (
+            update(FreelancerEmbedding)
+            .where(FreelancerEmbedding.freelancer_id == freelancer_id)
+            .values(**update_values)
+        )
+        
+        result = await self.db_session.execute(stmt)
+        await self.db_session.commit()
+        return result.rowcount > 0
 
     async def get_freelancer_embedding(self, freelancer_id: UUID) -> Optional[FreelancerEmbedding]:
         """Get a freelancer embedding by ID."""

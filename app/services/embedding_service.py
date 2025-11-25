@@ -8,8 +8,10 @@ from app.core.postgres_client import PostgresClient
 from app.core.config import get_settings
 from app.schemas.embeddings import (
     HylancerEmbeddingCreateRequest,
+    HylancerEmbeddingUpdateRequest,
     HylancerEmbeddingResponse,
     HylancerEmbeddingStatusResponse,
+    HylancerMetadata,
     ProjectEmbeddingCreateRequest,
     ProjectEmbeddingResponse,
     ProjectEmbeddingStatusResponse,
@@ -46,6 +48,14 @@ class HylancerEmbeddingService:
             logger.debug("Generating past project embedding...")
             past_project_embedding = await get_embedding(hylancer_data.past_projects)
 
+        # Ensure metadata is present
+        if hylancer_data.metadata is None:
+            hylancer_data.metadata = HylancerMetadata(
+                is_new_hylancer=True,
+                has_past_projects=False,
+                feedback_count=0
+            )
+
         # Calculate data quality score
         data_quality_score = calculate_data_quality_score(
             bio_length=len(hylancer_data.bio),
@@ -73,6 +83,88 @@ class HylancerEmbeddingService:
             created=existed,
             embedding_model=settings.EMBEDDING_MODEL,
             data_quality_score=data_quality_score
+        )
+
+    async def update_embedding(
+        self,
+        hylancer_id: UUID,
+        update_data: HylancerEmbeddingUpdateRequest
+    ) -> HylancerEmbeddingResponse:
+        """Update hylancer embedding."""
+        logger.info(f"Updating embedding for hylancer_id: {hylancer_id}")
+
+        # Fetch existing
+        existing = await self.postgres_client.get_freelancer_embedding(hylancer_id)
+        if not existing:
+             raise ValueError(f"Hylancer not found: {hylancer_id}")
+
+        update_dict = {}
+
+        # Handle Bio
+        if update_data.bio is not None:
+            logger.debug("Generating bio embedding...")
+            bio_embedding = await get_embedding(update_data.bio)
+            update_dict["bio_embedding"] = bio_embedding
+        
+        # Handle Past Projects
+        if update_data.past_projects is not None:
+             if len(update_data.past_projects) > 50:
+                logger.debug("Generating past project embedding...")
+                past_project_embedding = await get_embedding(update_data.past_projects)
+                update_dict["past_project_embedding"] = past_project_embedding
+             else:
+                update_dict["past_project_embedding"] = None
+
+        # Handle other fields
+        if update_data.skills is not None:
+            update_dict["skills"] = update_data.skills
+        if update_data.success_rate is not None:
+            update_dict["success_rate"] = update_data.success_rate
+        if update_data.client_satisfaction is not None:
+            update_dict["client_satisfaction"] = update_data.client_satisfaction
+        if update_data.communication_score is not None:
+            update_dict["communication_score"] = update_data.communication_score
+        if update_data.hourly_rate is not None:
+            update_dict["hourly_rate"] = update_data.hourly_rate
+        if update_data.availability_status is not None:
+            update_dict["availability_status"] = update_data.availability_status
+        if update_data.location is not None:
+            update_dict["location"] = update_data.location
+        if update_data.experience_level is not None:
+            update_dict["experience_level"] = update_data.experience_level
+        if update_data.total_projects is not None:
+            update_dict["total_projects"] = update_data.total_projects
+        if update_data.metadata is not None:
+            update_dict["meta_info"] = update_data.metadata.model_dump()
+
+        # Recalculate score only if bio is updated (since we need bio length)
+        if update_data.bio is not None:
+             skills_count = len(update_data.skills) if update_data.skills is not None else len(existing.skills)
+             
+             meta_info = update_data.metadata.model_dump() if update_data.metadata else existing.meta_info
+             has_past_projects = meta_info.get("has_past_projects", False)
+             feedback_count = meta_info.get("feedback_count", 0)
+             
+             total_projects = update_data.total_projects if update_data.total_projects is not None else existing.total_projects
+
+             data_quality_score = calculate_data_quality_score(
+                bio_length=len(update_data.bio),
+                skills_count=skills_count,
+                has_past_projects=has_past_projects,
+                total_projects=total_projects,
+                feedback_count=feedback_count
+             )
+             update_dict["data_quality_score"] = data_quality_score
+        
+        await self.postgres_client.update_freelancer_embedding_partial(hylancer_id, update_dict)
+        
+        dq_score = update_dict.get("data_quality_score", existing.data_quality_score)
+        
+        return HylancerEmbeddingResponse(
+            hylancer_id=hylancer_id,
+            created=False,
+            embedding_model=settings.EMBEDDING_MODEL,
+            data_quality_score=dq_score
         )
 
     async def get_embedding_status(self, hylancer_id: UUID) -> Optional[HylancerEmbeddingStatusResponse]:

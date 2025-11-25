@@ -13,18 +13,38 @@ class HylancerMetadata(BaseModel):
 
 class HylancerEmbeddingCreateRequest(BaseModel):
     hylancer_id: UUID
-    bio: str = Field(..., min_length=100, description="Hylancer bio (minimum 100 characters)")
+    bio: str = Field(..., description="Hylancer bio")
+    skills: List[str] = Field(..., min_length=1, description="Array of skills (minimum 1)")
     past_projects: str = Field(default="", description="Concatenated past project descriptions")
-    skills: List[str] = Field(..., min_length=3, description="Array of skills (minimum 3)")
-    success_rate: float = Field(..., ge=0.0, le=1.0)
-    client_satisfaction: float = Field(..., ge=0.0, le=1.0)
-    communication_score: float = Field(..., ge=0.0, le=1.0)
-    hourly_rate: float = Field(..., gt=0)
+    success_rate: float = Field(default=0.0, ge=0.0, le=1.0)
+    client_satisfaction: float = Field(default=0.0, ge=0.0, le=1.0)
+    communication_score: float = Field(default=0.0, ge=0.0, le=1.0)
+    hourly_rate: float = Field(default=0.0, ge=0.0)
     availability_status: str = Field(default="available", pattern="^(available|busy|unavailable)$")
     location: Optional[str] = None
-    experience_level: int = Field(..., ge=1, le=5, description="Experience level 1-5")
+    experience_level: int = Field(default=1, ge=1, le=5, description="Experience level 1-5")
     total_projects: int = Field(default=0, ge=0)
-    metadata: HylancerMetadata
+    metadata: HylancerMetadata = Field(
+        default_factory=lambda: HylancerMetadata(
+            is_new_hylancer=True,
+            has_past_projects=False,
+            feedback_count=0
+        )
+    )
+
+class HylancerEmbeddingUpdateRequest(BaseModel):
+    bio: Optional[str] = Field(default=None, description="Hylancer bio")
+    past_projects: Optional[str] = Field(default=None, description="Concatenated past project descriptions")
+    skills: Optional[List[str]] = Field(default=None, min_length=1, description="Array of skills (minimum 1)")
+    success_rate: Optional[float] = Field(default=None, ge=0.0, le=1.0)
+    client_satisfaction: Optional[float] = Field(default=None, ge=0.0, le=1.0)
+    communication_score: Optional[float] = Field(default=None, ge=0.0, le=1.0)
+    hourly_rate: Optional[float] = Field(default=None, gt=0)
+    availability_status: Optional[str] = Field(default=None, pattern="^(available|busy|unavailable)$")
+    location: Optional[str] = None
+    experience_level: Optional[int] = Field(default=None, ge=1, le=5, description="Experience level 1-5")
+    total_projects: Optional[int] = Field(default=None, ge=0)
+    metadata: Optional[HylancerMetadata] = None
 
 class HylancerEmbeddingResponse(BaseModel):
     status: str = "ok"
