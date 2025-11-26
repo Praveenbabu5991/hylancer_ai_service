@@ -75,20 +75,53 @@ async def create_hylancer_embedding(
     "/hylancer_embeddings/{hylancer_id}",
     response_model=HylancerEmbeddingResponse,
     summary="Update Hylancer Embedding",
-    description="Update existing hylancer embedding"
+    description="""Update existing hylancer embedding with partial data.
+
+    Common usage patterns:
+    - Call 1: Update bio and skills
+    - Call 2: Update past_projects (last 25 merged), total_projects (count), and client_satisfaction (rating)
+
+    All fields are optional - send only what needs to be updated."""
 )
 async def update_hylancer_embedding(
     hylancer_id: UUID,
     request: HylancerEmbeddingUpdateRequest = Body(
         ...,
-        example={
-            "bio": "Updated bio.",
-            "skills": ["Python", "Go"],
+        examples={
+            "basic_profile": {
+                "summary": "Update bio and skills",
+                "description": "Common Call 1: Update basic profile information",
+                "value": {
+                    "bio": "Updated bio text",
+                    "skills": ["Python", "Django", "FastAPI"]
+                }
+            },
+            "past_projects_metrics": {
+                "summary": "Update past projects and metrics",
+                "description": "Common Call 2: Update past projects (last 25 merged), total count, and ratings",
+                "value": {
+                    "past_projects": "Project 1 description... Project 2 description... Project 25 description",
+                    "total_projects": 150,
+                    "client_satisfaction": 0.96
+                }
+            },
+            "partial_update": {
+                "summary": "Update any single field",
+                "description": "You can update any combination of fields",
+                "value": {
+                    "hourly_rate": 100.0
+                }
+            }
         }
     ),
     service: HylancerEmbeddingService = Depends(get_hylancer_embedding_service)
 ):
-    """Update hylancer embedding."""
+    """Update hylancer embedding with partial data.
+
+    All fields are optional. Common usage:
+    - Call 1: Update bio and skills
+    - Call 2: Update past_projects, total_projects, and client_satisfaction
+    """
     try:
         logger.info(f"Received request to update embedding for hylancer_id: {hylancer_id}")
         response = await service.update_embedding(hylancer_id, request)
