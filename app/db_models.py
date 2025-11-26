@@ -37,14 +37,14 @@ class ProjectEmbedding(Base):
     project_embedding = Column(Vector(1536), nullable=False)  # OpenAI: 1536, Gemini: 768
     required_skills = Column(JSONB, nullable=False)  # Array of required skills ["Python", "Django", ...]
     budget = Column(DECIMAL(14, 2), nullable=False)
-    required_experience_level = Column(Integer, nullable=False)  # Minimum freelancer level (1-5)
+    required_experience_level = Column(Integer, nullable=True)  # Minimum freelancer level (1-5)
     preferred_location = Column(String(255), nullable=True)  # NULL = remote
-    status = Column(String(20), nullable=False, default='open')  # 'open', 'in_progress', 'completed', etc.
+    status = Column(String(20), nullable=True, default='open')  # 'open', 'in_progress', 'completed', etc.
     project_title = Column(String(255), nullable=False)  # Stored for quick reference
     embedding_model = Column(String(50), nullable=False)
     embedding_version = Column(String(20), nullable=False)
     data_quality_score = Column(Float, nullable=False)  # Project description quality (0.0-1.0)
-    meta_info = Column(JSONB, nullable=False)  # {is_generic_description, skill_count}
+    meta_info = Column(JSONB, nullable=True)  # {is_generic_description, skill_count}
     created_at = Column(DateTime(timezone=True), default=func.now(), nullable=False)
     last_updated = Column(DateTime(timezone=True), onupdate=func.now(), default=func.now(), nullable=False)
 

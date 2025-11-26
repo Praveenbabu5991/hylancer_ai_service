@@ -13,8 +13,10 @@ from app.schemas.embeddings import (
     HylancerEmbeddingStatusResponse,
     HylancerMetadata,
     ProjectEmbeddingCreateRequest,
+    ProjectEmbeddingUpdateRequest,
     ProjectEmbeddingResponse,
     ProjectEmbeddingStatusResponse,
+    ProjectMetadata,
 )
 from app.utils.scoring import (
     calculate_data_quality_score,
@@ -239,6 +241,80 @@ class ProjectEmbeddingService:
             created=existed,
             embedding_model=settings.EMBEDDING_MODEL,
             data_quality_score=data_quality_score
+        )
+
+    async def update_embedding(
+        self,
+        project_id: UUID,
+        update_data: ProjectEmbeddingUpdateRequest
+    ) -> ProjectEmbeddingResponse:
+        """Update project embedding."""
+        logger.info(f"Updating embedding for project_id: {project_id}")
+
+        # Fetch existing project
+        existing = await self.postgres_client.get_project_embedding(project_id)
+        if not existing:
+            raise ValueError(f"Project not found: {project_id}")
+
+        update_dict = {}
+
+        # Handle title and description - regenerate embedding if either changes
+        if update_data.title is not None or update_data.description is not None:
+            # Use updated values or fallback to existing
+            title = update_data.title if update_data.title is not None else existing.project_title
+            description = update_data.description if update_data.description is not None else ""
+
+            # Get existing description from meta_info if not provided
+            if update_data.description is None:
+                # We need to store description in meta_info or fetch from another source
+                # For now, we'll only regenerate if description is provided
+                pass
+
+            if update_data.title is not None or update_data.description is not None:
+                project_text = f"{title}. {description}"
+                logger.debug("Generating project embedding...")
+                project_embedding = await get_embedding(project_text)
+                update_dict["project_embedding"] = project_embedding
+
+                if update_data.title is not None:
+                    update_dict["project_title"] = update_data.title
+
+        # Handle other fields
+        if update_data.required_skills is not None:
+            update_dict["required_skills"] = update_data.required_skills
+        if update_data.budget is not None:
+            update_dict["budget"] = update_data.budget
+        if update_data.required_experience_level is not None:
+            update_dict["required_experience_level"] = update_data.required_experience_level
+        if update_data.preferred_location is not None:
+            update_dict["preferred_location"] = update_data.preferred_location
+        if update_data.status is not None:
+            update_dict["status"] = update_data.status
+        if update_data.metadata is not None:
+            update_dict["meta_info"] = update_data.metadata.model_dump()
+
+        # Recalculate data quality score if relevant fields changed
+        if update_data.title is not None or update_data.description is not None or update_data.required_skills is not None:
+            title_length = len(update_data.title) if update_data.title is not None else len(existing.project_title)
+            description_length = len(update_data.description) if update_data.description is not None else 0
+            skills_count = len(update_data.required_skills) if update_data.required_skills is not None else len(existing.required_skills)
+
+            data_quality_score = calculate_project_data_quality_score(
+                title_length=title_length,
+                description_length=description_length,
+                skills_count=skills_count
+            )
+            update_dict["data_quality_score"] = data_quality_score
+
+        await self.postgres_client.update_project_embedding_partial(project_id, update_dict)
+
+        dq_score = update_dict.get("data_quality_score", existing.data_quality_score)
+
+        return ProjectEmbeddingResponse(
+            project_id=project_id,
+            created=False,
+            embedding_model=settings.EMBEDDING_MODEL,
+            data_quality_score=dq_score
         )
 
     async def get_embedding_status(self, project_id: UUID) -> Optional[ProjectEmbeddingStatusResponse]:

@@ -203,6 +203,30 @@ class PostgresClient:
         await self.db_session.commit()
         return True
 
+    async def update_project_embedding_partial(
+        self,
+        project_id: UUID,
+        update_data: Dict[str, Any]
+    ) -> bool:
+        """Update project embedding with partial data."""
+        # Filter out None values
+        update_values = {k: v for k, v in update_data.items() if v is not None}
+
+        if not update_values:
+            return True
+
+        update_values["last_updated"] = func.now()
+
+        stmt = (
+            update(ProjectEmbedding)
+            .where(ProjectEmbedding.project_id == project_id)
+            .values(**update_values)
+        )
+
+        result = await self.db_session.execute(stmt)
+        await self.db_session.commit()
+        return result.rowcount > 0
+
     async def get_project_embedding(self, project_id: UUID) -> Optional[ProjectEmbedding]:
         """Get a project embedding by ID."""
         stmt = select(ProjectEmbedding).where(ProjectEmbedding.project_id == project_id)

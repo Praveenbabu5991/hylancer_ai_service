@@ -97,14 +97,29 @@ class ProjectMetadata(BaseModel):
 
 class ProjectEmbeddingCreateRequest(BaseModel):
     project_id: UUID
-    title: str = Field(..., min_length=10, description="Project title (minimum 10 characters)")
-    description: str = Field(..., min_length=150, description="Project description (minimum 150 characters)")
-    required_skills: List[str] = Field(..., min_length=2, description="Required skills (minimum 2)")
+    title: str = Field(..., min_length=1, description="Project title")
+    description: str = Field(..., description="Project description")
+    required_skills: List[str] = Field(..., min_length=1, description="Required skills (minimum 1)")
     budget: float = Field(..., gt=0)
-    required_experience_level: int = Field(..., ge=1, le=5)
+    required_experience_level: int = Field(default=1, ge=1, le=5)
     preferred_location: Optional[str] = None
     status: str = Field(default="open", pattern="^(open|in_progress|completed|cancelled|on_hold)$")
-    metadata: ProjectMetadata
+    metadata: ProjectMetadata = Field(
+        default_factory=lambda: ProjectMetadata(
+            is_generic_description=False,
+            skill_count=0
+        )
+    )
+
+class ProjectEmbeddingUpdateRequest(BaseModel):
+    title: Optional[str] = Field(None, min_length=1, description="Project title")
+    description: Optional[str] = Field(None, description="Project description")
+    required_skills: Optional[List[str]] = Field(None, min_length=1, description="Required skills (minimum 1)")
+    budget: Optional[float] = Field(None, gt=0)
+    required_experience_level: Optional[int] = Field(None, ge=1, le=5)
+    preferred_location: Optional[str] = None
+    status: Optional[str] = Field(None, pattern="^(open|in_progress|completed|cancelled|on_hold)$")
+    metadata: Optional[ProjectMetadata] = None
 
 class ProjectEmbeddingResponse(BaseModel):
     status: str = "ok"

@@ -16,6 +16,7 @@ from app.schemas.embeddings import (
     HylancerListResponse,
     HylancerSchema,
     ProjectEmbeddingCreateRequest,
+    ProjectEmbeddingUpdateRequest,
     ProjectEmbeddingResponse,
     ProjectEmbeddingStatusResponse,
     ProjectEmbeddingDeleteResponse,
@@ -217,30 +218,23 @@ async def get_all_hylancers(
     "/project_embeddings",
     response_model=ProjectEmbeddingResponse,
     status_code=status.HTTP_201_CREATED,
-    summary="Create Project Embedding",
-    description="Generate and store embedding for a project"
+    summary="Create JD (Project) Embedding",
+    description="Generate and store embedding for a job description (project)"
 )
 async def create_project_embedding(
     request: ProjectEmbeddingCreateRequest = Body(
         ...,
         example={
             "project_id": "b582a86f-4e21-4c18-943a-b6ab1ec6f907",
-            "title": "Develop a new e-commerce platform",
-            "description": "We are looking for a skilled full-stack developer to build a new e-commerce platform from scratch. The platform should include user authentication, product listings, shopping cart functionality, and payment integration. Experience with modern web technologies is essential.",
-            "required_skills": ["React", "Node.js", "PostgreSQL", "AWS"],
-            "budget": 15000.0,
-            "required_experience_level": 4,
-            "preferred_location": "Remote",
-            "status": "open",
-            "metadata": {
-                "is_generic_description": False,
-                "skill_count": 4
-            }
+            "title": "Full Stack Developer",
+            "description": "Looking for experienced developer",
+            "required_skills": ["React"],
+            "budget": 15000.0
         }
     ),
     service: ProjectEmbeddingService = Depends(get_project_embedding_service)
 ):
-    """Create or update project embedding."""
+    """Create or update JD (project) embedding."""
     try:
         logger.info(f"Received request to create embedding for project_id: {request.project_id}")
         response = await service.create_or_update_embedding(request)
@@ -256,40 +250,51 @@ async def create_project_embedding(
 @router.put(
     "/project_embeddings/{project_id}",
     response_model=ProjectEmbeddingResponse,
-    summary="Update Project Embedding",
-    description="Update existing project embedding"
+    summary="Update JD (Project) Embedding",
+    description="""Update existing JD (project) embedding with partial data.
+
+    All fields are optional - send only what needs to be updated.
+    project_id cannot be updated (taken from URL path)."""
 )
 async def update_project_embedding(
     project_id: UUID,
-    request: ProjectEmbeddingCreateRequest = Body(
+    request: ProjectEmbeddingUpdateRequest = Body(
         ...,
-        example={
-            "project_id": "b582a86f-4e21-4c18-943a-b6ab1ec6f907",
-            "title": "Develop a new e-commerce platform",
-            "description": "We are looking for a skilled full-stack developer to build a new e-commerce platform from scratch. The platform should include user authentication, product listings, shopping cart functionality, and payment integration. Experience with modern web technologies is essential.",
-            "required_skills": ["React", "Node.js", "PostgreSQL", "AWS"],
-            "budget": 15000.0,
-            "required_experience_level": 4,
-            "preferred_location": "Remote",
-            "status": "open",
-            "metadata": {
-                "is_generic_description": False,
-                "skill_count": 4
+        examples={
+            "update_title_description": {
+                "summary": "Update title and description",
+                "description": "Update JD title and description",
+                "value": {
+                    "title": "Senior Full Stack Developer",
+                    "description": "Looking for a senior developer with 5+ years of experience in React and Node.js"
+                }
+            },
+            "update_skills_budget": {
+                "summary": "Update skills and budget",
+                "description": "Update required skills and project budget",
+                "value": {
+                    "required_skills": ["React", "Node.js", "TypeScript", "AWS"],
+                    "budget": 20000.0
+                }
+            },
+            "update_status": {
+                "summary": "Update project status",
+                "description": "Update project status (e.g., mark as in_progress)",
+                "value": {
+                    "status": "in_progress"
+                }
             }
         }
     ),
     service: ProjectEmbeddingService = Depends(get_project_embedding_service)
 ):
-    """Update project embedding."""
-    if project_id != request.project_id:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Project ID in path and body do not match"
-        )
+    """Update JD (project) embedding with partial data.
 
+    All fields are optional. project_id cannot be updated.
+    """
     try:
         logger.info(f"Received request to update embedding for project_id: {project_id}")
-        response = await service.create_or_update_embedding(request)
+        response = await service.update_embedding(project_id, request)
         return response
     except Exception as e:
         logger.exception(f"Error updating project embedding: {e}")
