@@ -62,9 +62,9 @@ class Settings(BaseSettings):
     # Cold Start Settings
     COLD_START_BOOST_AMOUNT: float = 0.05
     NEW_FREELANCER_PROJECT_THRESHOLD: int = 3
-    LOW_FEEDBACK_THRESHOLD: int = 3
+    LOW_FEEDBACK_THRESHOLD: int = 3  # If feedback_count < 3, metrics are NOT used (weight = 0)
 
-    # Default Metrics for New Freelancers
+    # Default Metrics for New Freelancers (NOT used in recommendations if feedback_count < 3)
     DEFAULT_SUCCESS_RATE: float = 0.7
     DEFAULT_CLIENT_SATISFACTION: float = 0.75
     DEFAULT_COMMUNICATION_SCORE: float = 0.7

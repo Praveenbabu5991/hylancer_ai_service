@@ -111,22 +111,22 @@ def adjust_freelancer_weights(
         weights["past_project_similarity"] = 0.0  # -20%
         weights["skill_overlap"] = 0.30  # +10%
 
-    # Adjust for low feedback
+    # Adjust for low/no feedback - completely zero out metrics for freshers
     if feedback_count < settings.LOW_FEEDBACK_THRESHOLD:
-        # Reduce metric weights
-        weights["success_rate"] = 0.05  # -10%
-        weights["client_satisfaction"] = 0.05  # -10%
-        weights["communication_score"] = 0.05  # -5%
+        # Zero out metric weights - they should NOT be used for freshers
+        weights["success_rate"] = 0.0
+        weights["client_satisfaction"] = 0.0
+        weights["communication_score"] = 0.0
 
-        # Redistribute to semantic weights
+        # Redistribute 40% (15% + 15% + 10%) to semantic weights
         if has_past_projects:
-            weights["bio_similarity"] += 0.10
-            weights["skill_overlap"] += 0.10
-            weights["past_project_similarity"] += 0.05
+            weights["bio_similarity"] += 0.15  # Total: 35%
+            weights["skill_overlap"] += 0.15   # Total: 35%
+            weights["past_project_similarity"] += 0.10  # Total: 30%
         else:
-            # If no past projects, distribute to bio and skill only
-            weights["bio_similarity"] += 0.125
-            weights["skill_overlap"] += 0.125
+            # If no past projects, distribute all to bio and skill only
+            weights["bio_similarity"] += 0.20  # Total: 50%
+            weights["skill_overlap"] += 0.20   # Total: 50%
 
     return weights
 
