@@ -213,6 +213,11 @@ class ProjectEmbeddingService:
         # Combine title and description for embedding
         project_text = f"{project_data.title}. {project_data.description}"
 
+        # Handle nullable required_experience_level
+        if project_data.required_experience_level is None:
+            logger.warning("required_experience_level is None, defaulting to 1.")
+            project_data.required_experience_level = 1
+
         # Generate project embedding
         logger.debug("Generating project embedding...")
         project_embedding = await get_embedding(project_text)

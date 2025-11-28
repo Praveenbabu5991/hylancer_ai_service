@@ -101,7 +101,7 @@ class ProjectEmbeddingCreateRequest(BaseModel):
     description: str = Field(..., description="Project description")
     required_skills: List[str] = Field(..., min_length=1, description="Required skills (minimum 1)")
     budget: float = Field(..., gt=0)
-    required_experience_level: int = Field(default=1, ge=1, le=5)
+    required_experience_level: Optional[int] = Field(default=1, ge=1, le=5)
     preferred_location: Optional[str] = None
     status: str = Field(default="open", pattern="^(open|in_progress|completed|cancelled|on_hold)$")
     metadata: ProjectMetadata = Field(
