@@ -65,7 +65,6 @@ class ProjectScoreComponents(BaseModel):
 
 class ProjectRecommendationMetadata(BaseModel):
     matched_skills: List[str]
-    budget_fit: str  # "excellent", "good", "fair"
     confidence: str  # "high", "medium", "low"
 
 class ProjectRecommendationResult(BaseModel):

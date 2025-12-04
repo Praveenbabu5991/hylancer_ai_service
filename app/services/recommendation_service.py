@@ -24,7 +24,6 @@ from app.utils.scoring import (
     get_matched_skills,
     calculate_confidence_level,
     adjust_freelancer_weights,
-    calculate_budget_fit,
     generate_freelancer_recommendation_reason,
     generate_project_recommendation_reason,
 )
@@ -214,10 +213,11 @@ class RecommendationService:
         """
         Recommend projects for a freelancer based on their experience and skills.
 
-        According to PRD:
-        - 50% project similarity (past projects vs project description)
-        - 25% skill overlap
-        - 25% bio similarity
+        Weights dynamically adjust based on data availability:
+        - With past projects: 50% project similarity, 25% skill overlap, 25% bio similarity
+        - Without past projects (freshers): 60% bio similarity, 40% skill overlap
+
+        This ensures fair recommendations for freshers based on their bio and skills.
         """
         start_time = time.time()
         request_id = uuid.uuid4()
@@ -244,6 +244,9 @@ class RecommendationService:
 
         logger.debug(f"Found {len(search_results)} candidate projects")
 
+        # Check if freelancer has past projects
+        has_past_projects = freelancer_obj.past_project_embedding is not None
+
         results: List[ProjectRecommendationResult] = []
 
         for project_obj, distance in search_results:
@@ -256,16 +259,25 @@ class RecommendationService:
             skill_overlap = calculate_jaccard_similarity(freelancer_obj.skills, project_obj.required_skills)
             matched_skills = get_matched_skills(freelancer_obj.skills, project_obj.required_skills)
 
-            # Calculate bio similarity separately for component breakdown
-            # (for display purposes, actual search used combined embedding)
-            bio_similarity = project_similarity * 0.5  # Approximation
-
-            # Calculate final score according to PRD weights
-            final_score = (
-                settings.PROJECT_SIMILARITY_WEIGHT * project_similarity +
-                settings.PROJECT_SKILL_OVERLAP_WEIGHT * skill_overlap +
-                settings.PROJECT_BIO_SIMILARITY_WEIGHT * bio_similarity
-            )
+            # For hylancers without past projects, focus on bio and skills
+            # Adjust weights dynamically based on data availability
+            if has_past_projects:
+                # Standard weights: 50% project similarity, 25% skill overlap, 25% bio similarity
+                bio_similarity = project_similarity * 0.5  # Approximation from combined embedding
+                final_score = (
+                    settings.PROJECT_SIMILARITY_WEIGHT * project_similarity +
+                    settings.PROJECT_SKILL_OVERLAP_WEIGHT * skill_overlap +
+                    settings.PROJECT_BIO_SIMILARITY_WEIGHT * bio_similarity
+                )
+            else:
+                # For freshers without past projects: 60% bio similarity, 40% skill overlap
+                # Since project_similarity is derived from bio_embedding only, use it as bio_similarity
+                bio_similarity = project_similarity
+                final_score = (
+                    0.60 * bio_similarity +
+                    0.40 * skill_overlap
+                )
+                logger.debug(f"Adjusted weights for fresher - bio: 0.60, skills: 0.40")
 
             # Clamp score
             final_score = max(0.0, min(1.0, final_score))
@@ -274,12 +286,6 @@ class RecommendationService:
             if final_score < settings.MINIMUM_SCORE:
                 continue
 
-            # Calculate budget fit
-            budget_fit = calculate_budget_fit(
-                freelancer_hourly_rate=float(freelancer_obj.hourly_rate),
-                project_budget=float(project_obj.budget)
-            )
-
             # Determine confidence level
             confidence = calculate_confidence_level(final_score)
 
@@ -287,8 +293,7 @@ class RecommendationService:
             reason = generate_project_recommendation_reason(
                 project_similarity=project_similarity,
                 skill_overlap=skill_overlap,
-                matched_skills=matched_skills,
-                budget_fit=budget_fit
+                matched_skills=matched_skills
             )
 
             # Create result
@@ -303,7 +308,6 @@ class RecommendationService:
                 reason=reason,
                 metadata=ProjectRecommendationMetadata(
                     matched_skills=matched_skills,
-                    budget_fit=budget_fit,
                     confidence=confidence
                 )
             )

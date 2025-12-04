@@ -257,32 +257,6 @@ def is_generic_project_description(description: str) -> bool:
     return False
 
 
-def calculate_budget_fit(
-    freelancer_hourly_rate: float,
-    project_budget: float,
-    estimated_hours: int = 40
-) -> str:
-    """
-    Calculate how well the project budget fits the freelancer's rate.
-
-    Args:
-        freelancer_hourly_rate: Freelancer's hourly rate
-        project_budget: Total project budget
-        estimated_hours: Estimated project hours (default 40)
-
-    Returns:
-        String: "excellent", "good", or "fair"
-    """
-    estimated_freelancer_cost = freelancer_hourly_rate * estimated_hours
-
-    if project_budget >= estimated_freelancer_cost * 1.5:
-        return "excellent"
-    elif project_budget >= estimated_freelancer_cost:
-        return "good"
-    else:
-        return "fair"
-
-
 def generate_freelancer_recommendation_reason(
     bio_similarity: float,
     past_project_similarity: float,
@@ -342,14 +316,15 @@ def generate_freelancer_recommendation_reason(
 def generate_project_recommendation_reason(
     project_similarity: float,
     skill_overlap: float,
-    matched_skills: List[str],
-    budget_fit: str
+    matched_skills: List[str]
 ) -> str:
     """
     Generate a human-readable reason for project recommendation.
 
     Args:
-        Various scoring components and metadata
+        project_similarity: Similarity score based on past work and bio
+        skill_overlap: Jaccard similarity of skills
+        matched_skills: List of matched skills
 
     Returns:
         String explaining why this project was recommended
@@ -358,23 +333,21 @@ def generate_project_recommendation_reason(
 
     # Past work alignment
     if project_similarity >= 0.85:
-        reasons.append("Excellent match - your past work aligns perfectly with requirements")
+        reasons.append("Excellent match - your profile and experience align perfectly with requirements")
     elif project_similarity >= 0.7:
-        reasons.append("Strong alignment with your experience")
+        reasons.append("Strong alignment with your experience and expertise")
+    elif project_similarity >= 0.5:
+        reasons.append("Good match with your background")
 
     # Skills
     if skill_overlap >= 0.9:
-        reasons.append(f"All required skills matched ({', '.join(matched_skills)})")
+        reasons.append(f"All required skills matched ({', '.join(matched_skills[:5])})")
     elif skill_overlap >= 0.7:
-        reasons.append(f"Most required skills matched")
-
-    # Budget
-    if budget_fit == "excellent":
-        reasons.append("Budget well above your rate")
-    elif budget_fit == "good":
-        reasons.append("Budget fits your rate")
+        reasons.append(f"Most required skills matched ({', '.join(matched_skills[:3])})")
+    elif skill_overlap >= 0.5:
+        reasons.append(f"Key skills matched")
 
     if reasons:
         return ". ".join(reasons) + "."
     else:
-        return "Project matches your expertise."
+        return "Project matches your expertise and skills."
