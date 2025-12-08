@@ -109,7 +109,7 @@ class KnowYourWorthRequest(BaseModel):
         "client_reviews_average": 4.8
     }
     """
-    name: str = Field(..., min_length=2, description="Freelancer name")
+    name: Optional[str] = Field(default=None, min_length=2, description="Freelancer name")
     skills: List[str] = Field(..., min_items=1, max_items=20, description="Technical skills")
     years_of_experience: int = Field(..., ge=0, le=50, description="Years of professional experience")
     specialization: str = Field(..., min_length=3, description="Primary specialization/domain")

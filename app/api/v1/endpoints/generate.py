@@ -252,7 +252,6 @@ async def know_your_worth(
     request: KnowYourWorthRequest = Body(
         ...,
         example={
-            "name": "Rahul Sharma",
             "skills": ["Python", "Django", "React", "AWS", "Docker", "PostgreSQL"],
             "years_of_experience": 5,
             "specialization": "Full-Stack Development",
@@ -260,8 +259,7 @@ async def know_your_worth(
             "education_level": "Bachelor's",
             "english_proficiency": "Fluent",
             "certifications": ["AWS Certified Solutions Architect", "Google Cloud Professional"],
-            "portfolio_projects": 12,
-            "client_reviews_average": 4.8
+            "portfolio_projects": 12
         }
     )
 ):
@@ -295,7 +293,6 @@ async def know_your_worth(
 
     Example request:
     {
-        "name": "Rahul Sharma",
         "skills": ["Python", "Django", "React", "AWS"],
         "years_of_experience": 5,
         "specialization": "Full-Stack Development",
@@ -303,8 +300,7 @@ async def know_your_worth(
         "education_level": "Bachelor's",
         "english_proficiency": "Fluent",
         "certifications": ["AWS Certified", "Google Cloud Professional"],
-        "portfolio_projects": 12,
-        "client_reviews_average": 4.8
+        "portfolio_projects": 12
     }
     """
     try:

@@ -518,7 +518,7 @@ LEVEL: [experience level as number 1-5]"""
         Returns:
             KnowYourWorthResponse with worth calculation and insights
         """
-        logger.info(f"Calculating worth for: {request.name}")
+        logger.info(f"Calculating worth for: {request.name or 'a freelancer'}")
 
         # Step 1: Calculate base rate (INR per hour)
         base_rate = self._calculate_base_rate(
@@ -582,7 +582,7 @@ LEVEL: [experience level as number 1-5]"""
         # Step 7: Generate recommendations
         recommendations = await self._generate_recommendations(request, hourly_rate_inr)
 
-        logger.info(f"Calculated worth for {request.name}: ₹{hourly_rate_inr}/hr")
+        logger.info(f"Calculated worth for {request.name or 'a freelancer'}: ₹{hourly_rate_inr}/hr")
 
         return KnowYourWorthResponse(
             estimated_hourly_rate_inr=hourly_rate_inr,
