@@ -1,6 +1,7 @@
 # app/main.py - Main FastAPI application entry point.
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import get_settings
 from app.api.v1.router import api_router
 from loguru import logger
@@ -26,6 +27,15 @@ app = FastAPI(
     version="1.0.0",
     description="AI-powered microservice for Hylancer platform, offering freelancer/project recommendations and content generation.",
     debug=settings.ENV == "dev"
+)
+
+# Configure CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 @app.on_event("startup")

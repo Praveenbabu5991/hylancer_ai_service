@@ -305,7 +305,7 @@ async def know_your_worth(
     """
     try:
         service = await get_generation_service()
-        logger.info(f"Calculating worth for: {request.name}")
+        logger.info(f"Calculating worth for: {request.name or 'a freelancer'}")
         response = await service.calculate_freelancer_worth(request)
         return response
     except Exception as e:
