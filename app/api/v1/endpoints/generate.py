@@ -12,6 +12,8 @@ from app.schemas.generation import (
     GenerateBioFromResumeResponse,
     KnowYourWorthRequest,
     KnowYourWorthResponse,
+    GenerateProjectFromTextRequest,
+    GenerateProjectFromTextResponse,
 )
 from app.utils.file_extractor import extract_text_from_file
 
@@ -313,4 +315,78 @@ async def know_your_worth(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to calculate freelancer worth: {str(e)}"
+        )
+
+
+@router.post(
+    "/generate_project_from_text",
+    response_model=GenerateProjectFromTextResponse,
+    summary="Generate Project Description from Brief Text",
+    description="Generate complete project details (category, subcategory, title, description, skills) from client's brief text description"
+)
+async def generate_project_from_text(
+    request: GenerateProjectFromTextRequest = Body(
+        ...,
+        example={
+            "brief_description": "I need someone to build a mobile app for my restaurant with online ordering and delivery tracking",
+            "budget": 50000,
+            "budget_type": "Fixed-Price",
+            "deadline": "2026-03-15"
+        }
+    )
+):
+    """
+    Generate complete project description from brief text.
+
+    This endpoint:
+    1. Fetches available categories and subcategories from Project Service
+    2. Uses AI to map the client's brief description to the most appropriate category/subcategory
+    3. Generates a professional project title
+    4. Creates a detailed project description (200-400 words)
+    5. Suggests relevant skills required
+    6. Estimates project duration and complexity
+
+    Input:
+    - brief_description: Client's brief text (e.g., "I need a mobile app for my restaurant")
+    - budget (optional): Project budget
+    - budget_type (optional): "Fixed-Price" or "Hourly"
+    - deadline (optional): Project deadline
+
+    Output:
+    - category: Selected category from Project Service
+    - sub_category: Selected subcategory from Project Service
+    - title: Professional project title
+    - description: Detailed project description
+    - suggested_skills: List of relevant skills
+    - estimated_duration: Estimated project duration
+    - complexity_level: beginner/intermediate/expert
+
+    Example request:
+    {
+        "brief_description": "Build a mobile app for restaurant",
+        "budget": 50000,
+        "deadline": "2026-03-15"
+    }
+
+    Example response:
+    {
+        "category": "IT And Development",
+        "sub_category": "Mobile App Development",
+        "title": "Restaurant Mobile App with Online Ordering & Delivery Tracking",
+        "description": "We are seeking an experienced mobile app developer to create...",
+        "suggested_skills": ["React Native", "Firebase", "Payment Gateway Integration", "Google Maps API"],
+        "estimated_duration": "2-3 months",
+        "complexity_level": "intermediate"
+    }
+    """
+    try:
+        service = await get_generation_service()
+        logger.info(f"Generating project from text: {request.brief_description[:50]}...")
+        response = await service.generate_project_from_text(request)
+        return response
+    except Exception as e:
+        logger.exception(f"Error generating project from text: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to generate project description: {str(e)}"
         )

@@ -1,5 +1,6 @@
 # app/services/generation_service.py
 from loguru import logger
+from typing import Dict, List
 
 from app.schemas.generation import (
     GenerateProjectDescriptionRequest,
@@ -13,8 +14,12 @@ from app.schemas.generation import (
     KnowYourWorthResponse,
     WorthBreakdown,
     MarketInsights,
+    GenerateProjectFromTextRequest,
+    GenerateProjectFromTextResponse,
 )
 from app.core.llm_client import generate_text
+from app.clients.project_service_client import ProjectServiceClient
+from app.core.config import get_settings
 
 
 class GenerationService:
@@ -970,3 +975,186 @@ Each recommendation should be:
             ])
 
         return recommendations[:5]
+
+    async def generate_project_from_text(
+        self,
+        request: GenerateProjectFromTextRequest
+    ) -> GenerateProjectFromTextResponse:
+        """
+        Generate complete project description from brief text.
+
+        This method:
+        1. Fetches available categories and subcategories from Project Service
+        2. Uses AI to map the brief text to best matching category/subcategory
+        3. Generates complete project description with title, description, and skills
+
+        Args:
+            request: GenerateProjectFromTextRequest with brief description
+
+        Returns:
+            GenerateProjectFromTextResponse with complete project details
+        """
+        logger.info("Generating project from brief text")
+
+        settings = get_settings()
+
+        # Step 1: Fetch categories from Project Service
+        try:
+            project_client = ProjectServiceClient(settings.PROJECT_SERVICE_URL)
+            categories_dict = await project_client.get_categories_and_subcategories()
+            logger.info(f"Fetched {len(categories_dict)} categories from Project Service")
+        except Exception as e:
+            logger.error(f"Failed to fetch categories from Project Service: {e}")
+            # Fallback to default categories if service is unavailable
+            categories_dict = {
+                "IT And Development": ["Python Developer", "Java Developer", "Web Development"],
+                "Design": ["Logo Design", "Web Design", "UI/UX Design"],
+                "Writing": ["Content Writing", "Technical Writing", "Copywriting"]
+            }
+            logger.warning("Using fallback categories")
+
+        # Step 2: Build AI prompt to select category/subcategory and generate project details
+        categories_text = "\n".join([
+            f"- {category}: {', '.join(subcategories)}"
+            for category, subcategories in categories_dict.items()
+        ])
+
+        prompt = f"""You are a project classification and description expert for a freelance marketplace.
+
+Given the client's brief description, you need to:
+1. Select the MOST APPROPRIATE category and subcategory from the available options
+2. Generate a professional project title
+3. Write a detailed project description (200-400 words)
+4. Suggest relevant skills needed
+
+Client's Brief Description:
+"{request.brief_description}"
+
+Available Categories and Subcategories:
+{categories_text}
+
+Budget: {"₹" + str(request.budget) if request.budget else "Not specified"}
+Budget Type: {request.budget_type}
+Deadline: {request.deadline if request.deadline else "Not specified"}
+
+IMPORTANT: You MUST select a category and subcategory from the list above. Use the EXACT names as provided.
+
+Provide your response in this EXACT format:
+
+CATEGORY: [exact category name from the list]
+SUBCATEGORY: [exact subcategory name from the list]
+TITLE: [professional project title, max 80 characters]
+DESCRIPTION: [detailed project description, 200-400 words, include project goals, deliverables, technical requirements, and success criteria]
+SKILLS: [skill1, skill2, skill3, skill4, skill5]
+DURATION: [estimated duration like "2-3 months", "4-6 weeks"]
+COMPLEXITY: [beginner, intermediate, or expert]"""
+
+        try:
+            response_text = await generate_text(prompt)
+            result = self._parse_project_from_text_response(response_text, categories_dict)
+            logger.info(f"Successfully generated project: {result.category} -> {result.sub_category}")
+            return result
+
+        except Exception as e:
+            logger.exception(f"Error generating project from text: {e}")
+            # Return a basic fallback response
+            return self._get_fallback_project_from_text_response(request, categories_dict)
+
+    def _parse_project_from_text_response(
+        self,
+        response_text: str,
+        categories_dict: Dict[str, List[str]]
+    ) -> GenerateProjectFromTextResponse:
+        """Parse LLM response for project generation from text."""
+        lines = response_text.strip().split("\n")
+
+        category = ""
+        sub_category = ""
+        title = ""
+        description = ""
+        skills = []
+        duration = ""
+        complexity = ""
+
+        current_field = None
+        description_lines = []
+
+        for line in lines:
+            line = line.strip()
+
+            if line.startswith("CATEGORY:"):
+                category = line.replace("CATEGORY:", "").strip()
+                current_field = "category"
+            elif line.startswith("SUBCATEGORY:"):
+                sub_category = line.replace("SUBCATEGORY:", "").strip()
+                current_field = "subcategory"
+            elif line.startswith("TITLE:"):
+                title = line.replace("TITLE:", "").strip()
+                current_field = "title"
+            elif line.startswith("DESCRIPTION:"):
+                description_lines.append(line.replace("DESCRIPTION:", "").strip())
+                current_field = "description"
+            elif line.startswith("SKILLS:"):
+                skills_str = line.replace("SKILLS:", "").strip()
+                skills = [s.strip() for s in skills_str.split(",")]
+                current_field = "skills"
+            elif line.startswith("DURATION:"):
+                duration = line.replace("DURATION:", "").strip()
+                current_field = "duration"
+            elif line.startswith("COMPLEXITY:"):
+                complexity = line.replace("COMPLEXITY:", "").strip().lower()
+                current_field = "complexity"
+            elif current_field == "description" and line:
+                description_lines.append(line)
+
+        description = " ".join(description_lines).strip()
+
+        # Validate category exists
+        if category not in categories_dict:
+            logger.warning(f"AI selected invalid category: {category}")
+            # Try to find closest match or use first category
+            category = list(categories_dict.keys())[0]
+
+        # Validate subcategory exists under category
+        if sub_category not in categories_dict.get(category, []):
+            logger.warning(f"AI selected invalid subcategory: {sub_category} for category: {category}")
+            # Use first subcategory of the category
+            sub_category = categories_dict[category][0] if categories_dict[category] else "General"
+
+        # Fallback values
+        if not title:
+            title = "Professional Project Request"
+        if not description:
+            description = "Looking for a professional to help with this project. Please review the requirements and provide your proposal."
+        if not skills:
+            skills = ["Communication", "Problem Solving"]
+
+        return GenerateProjectFromTextResponse(
+            category=category,
+            sub_category=sub_category,
+            title=title[:100],
+            description=description,
+            suggested_skills=skills[:10],
+            estimated_duration=duration if duration else None,
+            complexity_level=complexity if complexity in ["beginner", "intermediate", "expert"] else None
+        )
+
+    def _get_fallback_project_from_text_response(
+        self,
+        request: GenerateProjectFromTextRequest,
+        categories_dict: Dict[str, List[str]]
+    ) -> GenerateProjectFromTextResponse:
+        """Return a fallback response if AI generation fails."""
+        # Use first available category and subcategory
+        first_category = list(categories_dict.keys())[0] if categories_dict else "General"
+        first_subcategory = categories_dict[first_category][0] if categories_dict.get(first_category) else "General Services"
+
+        return GenerateProjectFromTextResponse(
+            category=first_category,
+            sub_category=first_subcategory,
+            title="Project Request",
+            description=request.brief_description,
+            suggested_skills=["Communication", "Problem Solving", "Attention to Detail"],
+            estimated_duration="1-2 months",
+            complexity_level="intermediate"
+        )
