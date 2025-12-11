@@ -978,7 +978,8 @@ Each recommendation should be:
 
     async def generate_project_from_text(
         self,
-        request: GenerateProjectFromTextRequest
+        request: GenerateProjectFromTextRequest,
+        jwt_token: Optional[str] = None
     ) -> GenerateProjectFromTextResponse:
         """
         Generate complete project description from brief text.
@@ -990,6 +991,7 @@ Each recommendation should be:
 
         Args:
             request: GenerateProjectFromTextRequest with brief description
+            jwt_token: Optional JWT token for authenticating with Project Service
 
         Returns:
             GenerateProjectFromTextResponse with complete project details
@@ -1000,7 +1002,7 @@ Each recommendation should be:
 
         # Step 1: Fetch categories from Project Service
         try:
-            project_client = ProjectServiceClient(settings.PROJECT_SERVICE_URL)
+            project_client = ProjectServiceClient(settings.PROJECT_SERVICE_URL, jwt_token=jwt_token)
             categories_dict = await project_client.get_categories_and_subcategories()
             logger.info(f"Fetched {len(categories_dict)} categories from Project Service")
         except Exception as e:

@@ -1,5 +1,5 @@
 # app/api/v1/endpoints/generate.py
-from fastapi import APIRouter, HTTPException, status, Body, UploadFile, File
+from fastapi import APIRouter, HTTPException, status, Body, UploadFile, File, Header
 from loguru import logger
 
 from app.services.generation_service import GenerationService
@@ -333,7 +333,8 @@ async def generate_project_from_text(
             "budget_type": "Fixed-Price",
             "deadline": "2026-03-15"
         }
-    )
+    ),
+    authorization: str = Header(None, description="Optional JWT token for fetching categories from Project Service")
 ):
     """
     Generate complete project description from brief text.
@@ -382,7 +383,14 @@ async def generate_project_from_text(
     try:
         service = await get_generation_service()
         logger.info(f"Generating project from text: {request.brief_description[:50]}...")
-        response = await service.generate_project_from_text(request)
+
+        # Extract JWT token from Authorization header if present
+        jwt_token = None
+        if authorization:
+            # Remove "Bearer " prefix if present
+            jwt_token = authorization.replace("Bearer ", "") if authorization.startswith("Bearer ") else authorization
+
+        response = await service.generate_project_from_text(request, jwt_token=jwt_token)
         return response
     except Exception as e:
         logger.exception(f"Error generating project from text: {e}")
