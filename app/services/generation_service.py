@@ -1,6 +1,6 @@
 # app/services/generation_service.py
 from loguru import logger
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from app.schemas.generation import (
     GenerateProjectDescriptionRequest,
