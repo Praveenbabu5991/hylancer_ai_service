@@ -12,6 +12,8 @@ from app.schemas.recommend import (
     ProjectRecommendRequest,
     ProjectRecommendResponse,
 )
+from app.security.dependencies import require_authenticated_user
+from app.security.models import UserDetails
 
 router = APIRouter()
 
@@ -65,16 +67,16 @@ async def recommend_hylancers(
     "/recommend_projects",
     response_model=ProjectRecommendResponse,
     summary="Recommend Projects for a Freelancer",
-    description="Get AI-powered project recommendations based on freelancer experience and skills"
+    description="Get AI-powered project recommendations based on freelancer experience and skills. Requires authentication."
 )
 async def recommend_projects(
     request: ProjectRecommendRequest = Body(
         ...,
         example={
-            "hylancer_id": "7c573112-87c5-4b08-b393-91a6b25ad7e4",
             "top_k": 5
         }
     ),
+    current_user: UserDetails = Depends(require_authenticated_user),
     service: RecommendationService = Depends(get_recommendation_service)
 ):
     """
@@ -82,10 +84,13 @@ async def recommend_projects(
     - 50% project similarity (past work vs project description)
     - 25% skill overlap
     - 25% bio similarity
+
+    Authentication required: hylancer_id is extracted from JWT token.
     """
     try:
-        logger.info(f"Received request to recommend projects for hylancer_id: {request.hylancer_id}")
-        response = await service.recommend_projects(request)
+        hylancer_id = current_user.user_id
+        logger.info(f"Received request to recommend projects for hylancer_id: {hylancer_id} (from JWT)")
+        response = await service.recommend_projects(request, hylancer_id)
         return response
     except Exception as e:
         logger.exception(f"Error recommending projects: {e}")

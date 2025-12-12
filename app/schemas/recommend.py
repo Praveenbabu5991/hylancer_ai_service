@@ -49,13 +49,13 @@ class ProjectRecommendRequest(BaseModel):
     """
     Request to recommend projects for a hylancer.
 
+    Note: hylancer_id is extracted from JWT token, not from request body.
+
     Example:
     {
-        "hylancer_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
         "top_k": 20
     }
     """
-    hylancer_id: UUID = Field(..., description="ID of the hylancer")
     top_k: int = Field(default=20, ge=1, le=100, description="Number of top recommendations to return")
 
 class ProjectScoreComponents(BaseModel):

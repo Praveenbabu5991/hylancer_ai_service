@@ -28,6 +28,7 @@ python-dotenv==1.0.0
 loguru==0.7.2
 httpx==0.25.2
 requests==2.31.0  # For healthcheck and testing
+PyJWT==2.8.0  # For JWT token decoding (matches Project Management Service)
 
 # File parsing
 PyPDF2==3.0.1

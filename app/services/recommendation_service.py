@@ -208,7 +208,8 @@ class RecommendationService:
 
     async def recommend_projects(
         self,
-        request: ProjectRecommendRequest
+        request: ProjectRecommendRequest,
+        hylancer_id: UUID
     ) -> ProjectRecommendResponse:
         """
         Recommend projects for a freelancer based on their experience and skills.
@@ -218,18 +219,22 @@ class RecommendationService:
         - Without past projects (freshers): 60% bio similarity, 40% skill overlap
 
         This ensures fair recommendations for freshers based on their bio and skills.
+
+        Args:
+            request: ProjectRecommendRequest with top_k
+            hylancer_id: User ID extracted from JWT token
         """
         start_time = time.time()
         request_id = uuid.uuid4()
 
-        logger.info(f"Recommending projects for hylancer_id: {request.hylancer_id}")
+        logger.info(f"Recommending projects for hylancer_id: {hylancer_id}")
 
         # Get freelancer embedding
-        freelancer_obj = await self.postgres_client.get_freelancer_embedding(request.hylancer_id)
+        freelancer_obj = await self.postgres_client.get_freelancer_embedding(hylancer_id)
         if not freelancer_obj:
-            logger.warning(f"Freelancer embedding not found for hylancer_id: {request.hylancer_id}")
+            logger.warning(f"Freelancer embedding not found for hylancer_id: {hylancer_id}")
             return ProjectRecommendResponse(
-                hylancer_id=request.hylancer_id,
+                hylancer_id=hylancer_id,
                 total_results=0,
                 results=[]
             )
@@ -337,7 +342,7 @@ class RecommendationService:
         await self.postgres_client.log_recommendation(
             recommendation_type="project",
             request_id=request_id,
-            entity_id=request.hylancer_id,
+            entity_id=hylancer_id,
             recommended_ids=recommended_ids,
             filters_applied={"min_score": settings.MINIMUM_SCORE, "top_k": request.top_k},
             avg_score=avg_score,
@@ -348,7 +353,7 @@ class RecommendationService:
         logger.info(f"Recommended {len(results)} projects in {execution_time_ms}ms")
 
         return ProjectRecommendResponse(
-            hylancer_id=request.hylancer_id,
+            hylancer_id=hylancer_id,
             total_results=len(results),
             results=results
         )
