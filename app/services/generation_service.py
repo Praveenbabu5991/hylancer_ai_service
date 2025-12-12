@@ -1,6 +1,7 @@
 # app/services/generation_service.py
 from loguru import logger
 from typing import Dict, List, Optional
+from fastapi import HTTPException, status
 
 from app.schemas.generation import (
     GenerateProjectDescriptionRequest,
@@ -1001,19 +1002,36 @@ Each recommendation should be:
         settings = get_settings()
 
         # Step 1: Fetch categories from Project Service
+        categories_dict = {}
         try:
+            logger.info(f"Calling Project Service at: {settings.PROJECT_SERVICE_URL}")
+            logger.info(f"JWT Token present: {'Yes' if jwt_token else 'No'}")
+
             project_client = ProjectServiceClient(settings.PROJECT_SERVICE_URL, jwt_token=jwt_token)
             categories_dict = await project_client.get_categories_and_subcategories()
-            logger.info(f"Fetched {len(categories_dict)} categories from Project Service")
+
+            if categories_dict:
+                logger.info(f"✅ Successfully fetched {len(categories_dict)} categories from Project Service")
+                logger.info(f"Categories: {list(categories_dict.keys())}")
+            else:
+                logger.warning(f"⚠️ Project Service returned empty categories")
+
         except Exception as e:
-            logger.error(f"Failed to fetch categories from Project Service: {e}")
-            # Fallback to default categories if service is unavailable
-            categories_dict = {
-                "IT And Development": ["Python Developer", "Java Developer", "Web Development"],
-                "Design": ["Logo Design", "Web Design", "UI/UX Design"],
-                "Writing": ["Content Writing", "Technical Writing", "Copywriting"]
-            }
-            logger.warning("Using fallback categories")
+            logger.error(f"❌ Failed to fetch categories from Project Service")
+            logger.error(f"Error: {e}")
+            logger.error(f"Project Service URL: {settings.PROJECT_SERVICE_URL}")
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail=f"Unable to fetch categories from Project Service: {str(e)}"
+            )
+
+        # Validate categories exist
+        if not categories_dict:
+            logger.error("❌ No categories available from Project Service")
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="No categories available. Please ensure Project Service has categories configured."
+            )
 
         # Step 2: Build AI prompt to select category/subcategory and generate project details
         categories_text = "\n".join([
