@@ -43,12 +43,27 @@ class ProjectServiceClient:
         url = f"{self.base_url}/api/projects/categories-and-subcategories"
 
         try:
+            headers = self._get_headers()
+            logger.info(f"🔗 Calling Project Service: {url}")
+            logger.info(f"🔑 Authorization header present: {'Yes' if 'Authorization' in headers else 'No'}")
+            if 'Authorization' in headers:
+                # Log token format without exposing the actual token
+                auth_value = headers['Authorization']
+                logger.info(f"🔑 Token format: {auth_value[:20]}... (length: {len(auth_value)})")
+
             async with httpx.AsyncClient() as client:
                 response = await client.get(
                     url,
-                    headers=self._get_headers(),
+                    headers=headers,
                     timeout=self.timeout
                 )
+
+                logger.info(f"📥 Response status: {response.status_code}")
+
+                if response.status_code == 403:
+                    logger.error(f"❌ 403 FORBIDDEN - Authentication failed")
+                    logger.error(f"Response body: {response.text[:500]}")
+
                 response.raise_for_status()
 
                 data = response.json()
@@ -60,6 +75,11 @@ class ProjectServiceClient:
                 logger.warning(f"Unexpected response format: {data}")
                 return {}
 
+        except httpx.HTTPStatusError as e:
+            logger.error(f"❌ HTTP {e.response.status_code} error fetching categories")
+            logger.error(f"URL: {url}")
+            logger.error(f"Response: {e.response.text[:500]}")
+            raise
         except httpx.HTTPError as e:
             logger.error(f"HTTP error fetching categories: {e}")
             raise

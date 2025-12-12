@@ -389,6 +389,10 @@ async def generate_project_from_text(
         if authorization:
             # Remove "Bearer " prefix if present
             jwt_token = authorization.replace("Bearer ", "") if authorization.startswith("Bearer ") else authorization
+            logger.info(f"📨 Received Authorization header: {authorization[:30]}... (length: {len(authorization)})")
+            logger.info(f"🔑 Extracted JWT token: {jwt_token[:30]}... (length: {len(jwt_token)})")
+        else:
+            logger.warning(f"⚠️ No Authorization header received from client")
 
         response = await service.generate_project_from_text(request, jwt_token=jwt_token)
         return response
