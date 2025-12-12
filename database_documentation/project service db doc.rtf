@@ -1,0 +1,589 @@
+{\rtf1\ansi\ansicpg1252\deff0\nouicompat\deflang1033{\fonttbl{\f0\fswiss\fprq2\fcharset0 Calibri;}{\f1\froman\fprq2\fcharset0 Cambria;}{\f2\froman\fprq2\fcharset0 Times New Roman;}{\f3\fnil\fcharset0 Calibri;}}
+{\colortbl ;\red79\green129\blue189;\red52\green90\blue138;}
+{\stylesheet{ Normal;}{\s1 heading 1;}{\s2 heading 2;}{\s3 heading 3;}}
+{\*\generator Riched20 10.0.19041}\viewkind4\uc1 
+\pard\keep\keepn\widctlpar\s1\sb480\cf1\b\f0\fs32 Project Management Database Schema Documentation\par
+
+\pard\widctlpar\sa200\cf0\b0\f1\fs24\par
+
+\pard\keep\keepn\widctlpar\s2\sb200\cf1\b\f0\fs28 Core Project Management Tables\par
+
+\pard\keep\keepn\widctlpar\s3\sb200\fs24 Table: project\par
+
+\pard\widctlpar\sb180\sa180\cf0\f1 Schema:\b0  hylancer_project_mgmt\par
+\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\keep\keepn\widctlpar\sb36\sa36\qc\cf2\b\f0\fs36 Column Name\cell Data Type\cell Constraints / Description\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36\cf0\b0\f1\fs24 project_id\cell UUID\cell PRIMARY KEY\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 user_id\cell UUID\cell NOT NULL, FOREIGN KEY REFERENCES hylancer_user_mgmt.h_user(user_id) ON DELETE CASCADE\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 title\cell VARCHAR(255)\cell NOT NULL\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 description\cell TEXT\cell\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 budget\cell DECIMAL(14, 2)\cell\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 status\cell VARCHAR(20)\cell\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 deadline\cell DATE\cell\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 priority\cell VARCHAR(50)\cell\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 client_feedback\cell VARCHAR(255)\cell\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 client_rating\cell INTEGER\cell\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 posted_credits\cell INTEGER\cell\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 created_at\cell TIMESTAMP\cell DEFAULT CURRENT_TIMESTAMP\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 updated_at\cell TIMESTAMP\cell DEFAULT CURRENT_TIMESTAMP\cell\row 
+\pard\widctlpar\sb180\sa180\b Indexes:\b0  - idx_project_status ON (status) - idx_project_budget ON (budget) - idx_project_user_id ON (user_id) - idx_project_status_budget ON (status, budget)\par
+
+\pard\widctlpar\sa200\par
+
+\pard\keep\keepn\widctlpar\s3\sb200\cf1\b\f0 Table: custom_attribute\par
+
+\pard\widctlpar\sb180\sa180\cf0\f1 Schema:\b0  hylancer_project_mgmt\par
+\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\keep\keepn\widctlpar\sb36\sa36\qc\cf2\b\f0\fs36 Column Name\cell Data Type\cell Constraints / Description\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36\cf0\b0\f1\fs24 custom_attribute_id\cell SERIAL\cell PRIMARY KEY\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 project_id\cell UUID\cell NOT NULL, FOREIGN KEY REFERENCES project(project_id) ON DELETE CASCADE\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 attribute_name\cell VARCHAR(255)\cell NOT NULL\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 attribute_type\cell VARCHAR(50)\cell NOT NULL\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 created_at\cell TIMESTAMP\cell DEFAULT CURRENT_TIMESTAMP\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 updated_at\cell TIMESTAMP\cell DEFAULT CURRENT_TIMESTAMP\cell\row 
+\pard\widctlpar\sb180\sa180\b Indexes:\b0  - idx_custom_attribute_project_id ON (project_id) - idx_custom_attribute_name ON (attribute_name) - idx_custom_attribute_project_name ON (project_id, attribute_name)\par
+
+\pard\widctlpar\sa200\par
+
+\pard\keep\keepn\widctlpar\s3\sb200\cf1\b\f0 Table: status_history\par
+
+\pard\widctlpar\sb180\sa180\cf0\f1 Schema:\b0  hylancer_project_mgmt\par
+\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\keep\keepn\widctlpar\sb36\sa36\qc\cf2\b\f0\fs36 Column Name\cell Data Type\cell Constraints / Description\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36\cf0\b0\f1\fs24 id\cell UUID\cell PRIMARY KEY\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 from_status\cell VARCHAR(255)\cell NOT NULL\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 to_status\cell VARCHAR(255)\cell NOT NULL\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 updated_by\cell UUID\cell NOT NULL\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 updated_at\cell TIMESTAMP\cell NOT NULL\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 project_id\cell UUID\cell NOT NULL, FOREIGN KEY REFERENCES project(project_id) ON DELETE CASCADE\cell\row 
+\pard\widctlpar\sa200\par
+
+\pard\keep\keepn\widctlpar\s2\sb200\cf1\b\f0\fs28 Bidding System Tables\par
+
+\pard\keep\keepn\widctlpar\s3\sb200\fs24 Table: bid\par
+
+\pard\widctlpar\sb180\sa180\cf0\f1 Schema:\b0  hylancer_project_mgmt\par
+\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\keep\keepn\widctlpar\sb36\sa36\qc\cf2\b\f0\fs36 Column Name\cell Data Type\cell Constraints / Description\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36\cf0\b0\f1\fs24 bid_id\cell UUID\cell PRIMARY KEY\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 project_id\cell UUID\cell NOT NULL, FOREIGN KEY REFERENCES project(project_id) ON DELETE CASCADE\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 user_id\cell UUID\cell NOT NULL, FOREIGN KEY REFERENCES hylancer_user_mgmt.h_user(user_id) ON DELETE CASCADE\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 bid_amount\cell DECIMAL(10, 2)\cell NOT NULL\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 currency\cell VARCHAR(10)\cell NOT NULL\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 estimated_efforts\cell INT\cell NOT NULL\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 start_date\cell TIMESTAMP\cell NOT NULL\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 end_date\cell TIMESTAMP\cell NOT NULL\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 status\cell VARCHAR(10)\cell NOT NULL\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 created_at\cell TIMESTAMP\cell DEFAULT CURRENT_TIMESTAMP\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 updated_at\cell TIMESTAMP\cell DEFAULT CURRENT_TIMESTAMP\cell\row 
+\pard\widctlpar\sb180\sa180\b Indexes:\b0  - idx_bid_project_id ON (project_id)\par
+
+\pard\widctlpar\sa200\par
+
+\pard\keep\keepn\widctlpar\s3\sb200\cf1\b\f0 Table: shortlistedBid\par
+
+\pard\widctlpar\sb180\sa180\cf0\f1 Schema:\b0  hylancer_project_mgmt\par
+\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\keep\keepn\widctlpar\sb36\sa36\qc\cf2\b\f0\fs36 Column Name\cell Data Type\cell Constraints / Description\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36\cf0\b0\f1\fs24 shortlist_id\cell UUID\cell PRIMARY KEY\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 client_id\cell UUID\cell NOT NULL, FOREIGN KEY REFERENCES hylancer_user_mgmt.h_user(user_id) ON DELETE CASCADE\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 bid_id\cell UUID\cell NOT NULL, FOREIGN KEY REFERENCES bid(bid_id) ON DELETE CASCADE\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 remark\cell VARCHAR(255)\cell\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 created_at\cell TIMESTAMP\cell DEFAULT CURRENT_TIMESTAMP\cell\row 
+\pard\widctlpar\sa200\par
+
+\pard\keep\keepn\widctlpar\s3\sb200\cf1\b\f0 Table: compare_bid\par
+
+\pard\widctlpar\sb180\sa180\cf0\f1 Schema:\b0  hylancer_project_mgmt\par
+\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx1660\cellx3173\cellx8007 
+\pard\intbl\keep\keepn\widctlpar\sb36\sa36\qc\cf2\b\f0\fs36 Column Name\cell Data Type\cell Constraints / Description\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx1660\cellx3173\cellx8007 
+\pard\intbl\widctlpar\sb36\sa36\cf0\b0\f1\fs24 id\cell UUID\cell PRIMARY KEY\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx1660\cellx3173\cellx8007 
+\pard\intbl\widctlpar\sb36\sa36 project_id\cell UUID\cell NOT NULL\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx1660\cellx3173\cellx8007 
+\pard\intbl\widctlpar\sb36\sa36 client_id\cell UUID\cell NOT NULL\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx1660\cellx3173\cellx8007 
+\pard\intbl\widctlpar\sb36\sa36 bid_ids\cell JSONB\cell NOT NULL\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx1660\cellx3173\cellx8007 
+\pard\intbl\widctlpar\sb36\sa36 created_at\cell TIMESTAMP\cell NOT NULL DEFAULT CURRENT_TIMESTAMP\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx1660\cellx3173\cellx8007 
+\pard\intbl\widctlpar\sb36\sa36 updated_at\cell TIMESTAMP\cell DEFAULT CURRENT_TIMESTAMP\cell\row 
+\pard\widctlpar\sa200\par
+
+\pard\keep\keepn\widctlpar\s2\sb200\cf1\b\f0\fs28 Contract and Milestone System\par
+
+\pard\keep\keepn\widctlpar\s3\sb200\fs24 Table: contract\par
+
+\pard\widctlpar\sb180\sa180\cf0\f1 Schema:\b0  hylancer_project_mgmt\par
+\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\keep\keepn\widctlpar\sb36\sa36\qc\cf2\b\f0\fs36 Column Name\cell Data Type\cell Constraints / Description\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36\cf0\b0\f1\fs24 contract_id\cell UUID\cell PRIMARY KEY\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 project_id\cell UUID\cell NOT NULL, FOREIGN KEY REFERENCES project(project_id)\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 client_id\cell UUID\cell NOT NULL\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 hylancer_id\cell UUID\cell NOT NULL\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 bid_id\cell UUID\cell NOT NULL, FOREIGN KEY REFERENCES bid(bid_id)\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 amount\cell DECIMAL(10, 2)\cell NOT NULL\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 payment_structure\cell VARCHAR(20)\cell NOT NULL\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 status\cell VARCHAR(20)\cell NOT NULL\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 created_at\cell TIMESTAMP\cell NOT NULL\cell\row 
+\pard\widctlpar\sa200\par
+
+\pard\keep\keepn\widctlpar\s3\sb200\cf1\b\f0 Table: milestone\par
+
+\pard\widctlpar\sb180\sa180\cf0\f1 Schema:\b0  hylancer_project_mgmt\par
+\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\keep\keepn\widctlpar\sb36\sa36\qc\cf2\b\f0\fs36 Column Name\cell Data Type\cell Constraints / Description\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36\cf0\b0\f1\fs24 milestone_id\cell UUID\cell PRIMARY KEY\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 contract_id\cell UUID\cell NOT NULL, FOREIGN KEY REFERENCES contract(contract_id)\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 project_id\cell UUID\cell FOREIGN KEY REFERENCES project(project_id)\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 title\cell VARCHAR(255)\cell NOT NULL\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 description\cell TEXT\cell\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 amount\cell DECIMAL(10, 2)\cell NOT NULL\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 currency\cell VARCHAR(10)\cell NOT NULL\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 start_date\cell TIMESTAMP WITH TIME ZONE\cell NOT NULL\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 end_date\cell TIMESTAMP WITH TIME ZONE\cell NOT NULL\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 estimated_effort_hours\cell INT\cell NOT NULL\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 effort_hours_spent\cell INT\cell NOT NULL\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 status\cell VARCHAR(50)\cell NOT NULL\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 created_at\cell TIMESTAMP WITH TIME ZONE\cell NOT NULL\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 updated_at\cell TIMESTAMP WITH TIME ZONE\cell NOT NULL\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 client_feedback\cell TEXT\cell\cell\row 
+\pard\widctlpar\sa200\par
+
+\pard\keep\keepn\widctlpar\s2\sb200\cf1\b\f0\fs28 File and Content Management\par
+
+\pard\keep\keepn\widctlpar\s3\sb200\fs24 Table: attachment\par
+
+\pard\widctlpar\sb180\sa180\cf0\f1 Schema:\b0  public\par
+\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\keep\keepn\widctlpar\sb36\sa36\qc\cf2\b\f0\fs36 Column Name\cell Data Type\cell Constraints / Description\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36\cf0\b0\f1\fs24 id\cell UUID\cell PRIMARY KEY\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 file_name\cell VARCHAR(255)\cell NOT NULL\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 file_type\cell VARCHAR(255)\cell NOT NULL\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 file_size\cell BIGINT\cell NOT NULL\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 created_at\cell TIMESTAMP\cell NOT NULL\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 updated_at\cell TIMESTAMP\cell NOT NULL\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 file_path\cell VARCHAR(1024)\cell NOT NULL\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 project_id\cell UUID\cell NOT NULL, FOREIGN KEY REFERENCES project(project_id)\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 comments\cell TEXT\cell NOT NULL\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 download_url\cell VARCHAR(2048)\cell NOT NULL\cell\row 
+\pard\widctlpar\sa200\par
+
+\pard\keep\keepn\widctlpar\s3\sb200\cf1\b\f0 Table: milestone_attachment\par
+
+\pard\widctlpar\sb180\sa180\cf0\f1 Schema:\b0  hylancer_project_mgmt\par
+\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\keep\keepn\widctlpar\sb36\sa36\qc\cf2\b\f0\fs36 Column Name\cell Data Type\cell Constraints / Description\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36\cf0\b0\f1\fs24 id\cell UUID\cell PRIMARY KEY\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 file_name\cell VARCHAR(255)\cell NOT NULL\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 file_type\cell VARCHAR(50)\cell NOT NULL\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 file_size\cell BIGINT\cell NOT NULL\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 created_at\cell TIMESTAMP WITH TIME ZONE\cell NOT NULL\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 updated_at\cell TIMESTAMP WITH TIME ZONE\cell NOT NULL\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 file_path\cell TEXT\cell NOT NULL\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 description_id\cell UUID\cell FOREIGN KEY REFERENCES milestone_description(description_id) ON DELETE CASCADE\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 download_url\cell VARCHAR(255)\cell NOT NULL\cell\row 
+\pard\widctlpar\sa200\par
+
+\pard\keep\keepn\widctlpar\s3\sb200\cf1\b\f0 Table: milestone_link\par
+
+\pard\widctlpar\sb180\sa180\cf0\f1 Schema:\b0  hylancer_project_mgmt\par
+\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\keep\keepn\widctlpar\sb36\sa36\qc\cf2\b\f0\fs36 Column Name\cell Data Type\cell Constraints / Description\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36\cf0\b0\f1\fs24 link_id\cell UUID\cell PRIMARY KEY\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 milestone_id\cell UUID\cell NOT NULL, FOREIGN KEY REFERENCES milestone(milestone_id)\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 link_url\cell TEXT\cell NOT NULL\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 description\cell VARCHAR(255)\cell\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 created_at\cell TIMESTAMP WITH TIME ZONE\cell NOT NULL\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 updated_at\cell TIMESTAMP WITH TIME ZONE\cell NOT NULL\cell\row 
+\pard\widctlpar\sa200\par
+
+\pard\keep\keepn\widctlpar\s3\sb200\cf1\b\f0 Table: milestone_description\par
+
+\pard\widctlpar\sb180\sa180\cf0\f1 Schema:\b0  hylancer_project_mgmt\par
+\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\keep\keepn\widctlpar\sb36\sa36\qc\cf2\b\f0\fs36 Column Name\cell Data Type\cell Constraints / Description\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36\cf0\b0\f1\fs24 description_id\cell UUID\cell PRIMARY KEY\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 submission_id\cell UUID\cell\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 description\cell TEXT\cell NOT NULL\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 user_id\cell UUID\cell NOT NULL\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 milestone_id\cell UUID\cell NOT NULL, FOREIGN KEY REFERENCES milestone(milestone_id) ON DELETE CASCADE\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 uploader_name\cell VARCHAR(255)\cell NOT NULL\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 status\cell VARCHAR(255)\cell NOT NULL\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 created_at\cell TIMESTAMP WITH TIME ZONE\cell NOT NULL\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 updated_at\cell TIMESTAMP WITH TIME ZONE\cell NOT NULL\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 sender_role\cell VARCHAR(255)\cell NOT NULL\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 comments\cell TEXT\cell\cell\row 
+\pard\widctlpar\sa200\par
+
+\pard\keep\keepn\widctlpar\s2\sb200\cf1\b\f0\fs28 Categorization System\par
+
+\pard\keep\keepn\widctlpar\s3\sb200\fs24 Table: category\par
+
+\pard\widctlpar\sb180\sa180\cf0\f1 Schema:\b0  hylancer_project_mgmt\par
+\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx1660\cellx3500\cellx6315 
+\pard\intbl\keep\keepn\widctlpar\sb36\sa36\qc\cf2\b\f0\fs36 Column Name\cell Data Type\cell Constraints / Description\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx1660\cellx3500\cellx6315 
+\pard\intbl\widctlpar\sb36\sa36\cf0\b0\f1\fs24 category_id\cell SERIAL\cell PRIMARY KEY\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx1660\cellx3500\cellx6315 
+\pard\intbl\widctlpar\sb36\sa36 name\cell VARCHAR(255)\cell NOT NULL\cell\row 
+\pard\widctlpar\sa200\par
+
+\pard\keep\keepn\widctlpar\s3\sb200\cf1\b\f0 Table: sub_category\par
+
+\pard\widctlpar\sb180\sa180\cf0\f1 Schema:\b0  hylancer_project_mgmt\par
+\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\keep\keepn\widctlpar\sb36\sa36\qc\cf2\b\f0\fs36 Column Name\cell Data Type\cell Constraints / Description\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36\cf0\b0\f1\fs24 subcategory_id\cell SERIAL\cell PRIMARY KEY\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 category_id\cell INTEGER\cell NOT NULL, FOREIGN KEY REFERENCES category(category_id) ON DELETE CASCADE\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 name\cell VARCHAR(255)\cell NOT NULL\cell\row 
+\pard\widctlpar\sa200\par
+
+\pard\keep\keepn\widctlpar\s2\sb200\cf1\b\f0\fs28 Dynamic Attribute System\par
+
+\pard\keep\keepn\widctlpar\s3\sb200\fs24 Table: Boolean_Attribute\par
+
+\pard\widctlpar\sb180\sa180\cf0\f1 Schema:\b0  hylancer_project_mgmt\par
+\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\keep\keepn\widctlpar\sb36\sa36\qc\cf2\b\f0\fs36 Column Name\cell Data Type\cell Constraints / Description\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36\cf0\b0\f1\fs24 id\cell SERIAL\cell PRIMARY KEY\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 custom_attribute_id\cell SERIAL\cell NOT NULL, FOREIGN KEY REFERENCES custom_attribute(custom_attribute_id) ON DELETE CASCADE\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 value\cell BOOLEAN\cell NOT NULL\cell\row 
+\pard\widctlpar\sa200\par
+
+\pard\keep\keepn\widctlpar\s3\sb200\cf1\b\f0 Table: Number_Attribute\par
+
+\pard\widctlpar\sb180\sa180\cf0\f1 Schema:\b0  hylancer_project_mgmt\par
+\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\keep\keepn\widctlpar\sb36\sa36\qc\cf2\b\f0\fs36 Column Name\cell Data Type\cell Constraints / Description\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36\cf0\b0\f1\fs24 id\cell SERIAL\cell PRIMARY KEY\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 custom_attribute_id\cell SERIAL\cell NOT NULL, FOREIGN KEY REFERENCES custom_attribute(custom_attribute_id) ON DELETE CASCADE\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 value\cell NUMERIC\cell NOT NULL\cell\row 
+\pard\widctlpar\sa200\par
+
+\pard\keep\keepn\widctlpar\s3\sb200\cf1\b\f0 Table: Date_Attribute\par
+
+\pard\widctlpar\sb180\sa180\cf0\f1 Schema:\b0  hylancer_project_mgmt\par
+\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\keep\keepn\widctlpar\sb36\sa36\qc\cf2\b\f0\fs36 Column Name\cell Data Type\cell Constraints / Description\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36\cf0\b0\f1\fs24 id\cell SERIAL\cell PRIMARY KEY\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 custom_attribute_id\cell SERIAL\cell NOT NULL, FOREIGN KEY REFERENCES custom_attribute(custom_attribute_id) ON DELETE CASCADE\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 value\cell DATE\cell NOT NULL\cell\row 
+\pard\widctlpar\sa200\par
+
+\pard\keep\keepn\widctlpar\s3\sb200\cf1\b\f0 Table: Email_Attribute\par
+
+\pard\widctlpar\sb180\sa180\cf0\f1 Schema:\b0  hylancer_project_mgmt\par
+\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\keep\keepn\widctlpar\sb36\sa36\qc\cf2\b\f0\fs36 Column Name\cell Data Type\cell Constraints / Description\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36\cf0\b0\f1\fs24 id\cell SERIAL\cell PRIMARY KEY\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 custom_attribute_id\cell SERIAL\cell NOT NULL, FOREIGN KEY REFERENCES custom_attribute(custom_attribute_id) ON DELETE CASCADE\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 value\cell VARCHAR(255)\cell NOT NULL\cell\row 
+\pard\widctlpar\sa200\par
+
+\pard\keep\keepn\widctlpar\s3\sb200\cf1\b\f0 Table: Url_Attribute\par
+
+\pard\widctlpar\sb180\sa180\cf0\f1 Schema:\b0  hylancer_project_mgmt\par
+\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\keep\keepn\widctlpar\sb36\sa36\qc\cf2\b\f0\fs36 Column Name\cell Data Type\cell Constraints / Description\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36\cf0\b0\f1\fs24 id\cell SERIAL\cell PRIMARY KEY\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 custom_attribute_id\cell SERIAL\cell NOT NULL, FOREIGN KEY REFERENCES custom_attribute(custom_attribute_id) ON DELETE CASCADE\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 value\cell VARCHAR(255)\cell NOT NULL\cell\row 
+\pard\widctlpar\sa200\par
+
+\pard\keep\keepn\widctlpar\s3\sb200\cf1\b\f0 Table: Dropdown_Attribute\par
+
+\pard\widctlpar\sb180\sa180\cf0\f1 Schema:\b0  hylancer_project_mgmt\par
+\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\keep\keepn\widctlpar\sb36\sa36\qc\cf2\b\f0\fs36 Column Name\cell Data Type\cell Constraints / Description\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36\cf0\b0\f1\fs24 id\cell SERIAL\cell PRIMARY KEY\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 custom_attribute_id\cell SERIAL\cell NOT NULL, FOREIGN KEY REFERENCES custom_attribute(custom_attribute_id) ON DELETE CASCADE\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 value\cell VARCHAR(255)\cell NOT NULL\cell\row 
+\pard\widctlpar\sa200\par
+
+\pard\keep\keepn\widctlpar\s3\sb200\cf1\b\f0 Table: Rating_Attribute\par
+
+\pard\widctlpar\sb180\sa180\cf0\f1 Schema:\b0  hylancer_project_mgmt\par
+\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\keep\keepn\widctlpar\sb36\sa36\qc\cf2\b\f0\fs36 Column Name\cell Data Type\cell Constraints / Description\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36\cf0\b0\f1\fs24 id\cell SERIAL\cell PRIMARY KEY\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 custom_attribute_id\cell SERIAL\cell NOT NULL, FOREIGN KEY REFERENCES custom_attribute(custom_attribute_id) ON DELETE CASCADE\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 value\cell NUMERIC\cell NOT NULL, CHECK (value >= 0 AND value <= 5)\cell\row 
+\pard\widctlpar\sa200\par
+
+\pard\keep\keepn\widctlpar\s3\sb200\cf1\b\f0 Table: List_Attribute\par
+
+\pard\widctlpar\sb180\sa180\cf0\f1 Schema:\b0  hylancer_project_mgmt\par
+\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\keep\keepn\widctlpar\sb36\sa36\qc\cf2\b\f0\fs36 Column Name\cell Data Type\cell Constraints / Description\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36\cf0\b0\f1\fs24 id\cell SERIAL\cell PRIMARY KEY\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 custom_attribute_id\cell SERIAL\cell NOT NULL, FOREIGN KEY REFERENCES custom_attribute(custom_attribute_id) ON DELETE CASCADE\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 item_value\cell VARCHAR(255)\cell NOT NULL\cell\row 
+\pard\widctlpar\sa200\par
+
+\pard\keep\keepn\widctlpar\s3\sb200\cf1\b\f0 Table: String_Attribute\par
+
+\pard\widctlpar\sb180\sa180\cf0\f1 Schema:\b0  hylancer_project_mgmt\par
+\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\keep\keepn\widctlpar\sb36\sa36\qc\cf2\b\f0\fs36 Column Name\cell Data Type\cell Constraints / Description\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36\cf0\b0\f1\fs24 id\cell SERIAL\cell PRIMARY KEY\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 custom_attribute_id\cell BIGINT\cell NOT NULL, FOREIGN KEY REFERENCES custom_attribute(custom_attribute_id) ON DELETE CASCADE\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 value\cell VARCHAR(255)\cell NOT NULL\cell\row 
+\pard\widctlpar\sa200\par
+
+\pard\keep\keepn\widctlpar\s2\sb200\cf1\b\f0\fs28 Transaction and Feedback System\par
+
+\pard\keep\keepn\widctlpar\s3\sb200\fs24 Table: transaction_history\par
+
+\pard\widctlpar\sb180\sa180\cf0\f1 Schema:\b0  hylancer_project_mgmt\par
+\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\keep\keepn\widctlpar\sb36\sa36\qc\cf2\b\f0\fs36 Column Name\cell Data Type\cell Constraints / Description\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36\cf0\b0\f1\fs24 transaction_id\cell UUID\cell PRIMARY KEY DEFAULT gen_random_uuid()\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 user_id\cell UUID\cell NOT NULL\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 points\cell INTEGER\cell NOT NULL\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 transaction_type\cell VARCHAR(50)\cell\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 reason\cell VARCHAR(255)\cell\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 created_at\cell TIMESTAMP WITH TIME ZONE\cell DEFAULT CURRENT_TIMESTAMP NOT NULL\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 updated_at\cell TIMESTAMP WITH TIME ZONE\cell DEFAULT CURRENT_TIMESTAMP NOT NULL\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 role\cell VARCHAR(50)\cell\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 project_id\cell UUID\cell\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 project_title\cell VARCHAR(255)\cell\cell\row 
+\pard\widctlpar\sa200\par
+
+\pard\keep\keepn\widctlpar\s3\sb200\cf1\b\f0 Table: feedback_type\par
+
+\pard\widctlpar\sb180\sa180\cf0\f1 Schema:\b0  hylancer_project_mgmt\par
+\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx3368\cellx5208\cellx9360 
+\pard\intbl\keep\keepn\widctlpar\sb36\sa36\qc\cf2\b\f0\fs36 Column Name\cell Data Type\cell Constraints / Description\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx3368\cellx5208\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36\cf0\b0\f1\fs24 id\cell UUID\cell PRIMARY KEY DEFAULT gen_random_uuid()\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx3368\cellx5208\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 communication_rating\cell INT\cell\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx3368\cellx5208\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 quality_of_work_rating\cell INT\cell\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx3368\cellx5208\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 adherence_to_deadlines_rating\cell INT\cell\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx3368\cellx5208\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 clarity_of_requirements_rating\cell INT\cell\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx3368\cellx5208\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 timeliness_of_payments_rating\cell INT\cell\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx3368\cellx5208\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 feedback_type\cell VARCHAR(255)\cell NOT NULL\cell\row 
+\pard\widctlpar\sa200\par
+
+\pard\keep\keepn\widctlpar\s3\sb200\cf1\b\f0 Table: feedback\par
+
+\pard\widctlpar\sb180\sa180\cf0\f1 Schema:\b0  hylancer_project_mgmt\par
+\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\keep\keepn\widctlpar\sb36\sa36\qc\cf2\b\f0\fs36 Column Name\cell Data Type\cell Constraints / Description\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36\cf0\b0\f1\fs24 feedback_id\cell UUID\cell PRIMARY KEY DEFAULT gen_random_uuid()\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 project_Id\cell UUID\cell NOT NULL, FOREIGN KEY REFERENCES project(project_id)\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 user_id\cell UUID\cell NOT NULL\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 feedback_type_id\cell UUID\cell REFERENCES feedback_type(id)\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 overallrating\cell INT\cell\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 comments\cell TEXT\cell\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx2386\cellx4405\cellx9360 
+\pard\intbl\widctlpar\sb36\sa36 created_at\cell TIMESTAMP\cell NOT NULL\cell\row 
+\pard\widctlpar\sa200\par
+
+\pard\keep\keepn\widctlpar\s2\sb200\cf1\b\f0\fs28 System Configuration\par
+
+\pard\keep\keepn\widctlpar\s3\sb200\fs24 Table: banners\par
+
+\pard\widctlpar\sb180\sa180\cf0\f1 Schema:\b0  hylancer_project_mgmt\par
+\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx1660\cellx3633\cellx7322 
+\pard\intbl\keep\keepn\widctlpar\sb36\sa36\qc\cf2\b\f0\fs36 Column Name\cell Data Type\cell Constraints / Description\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx1660\cellx3633\cellx7322 
+\pard\intbl\widctlpar\sb36\sa36\cf0\b0\f1\fs24 id\cell BIGSERIAL\cell PRIMARY KEY\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx1660\cellx3633\cellx7322 
+\pard\intbl\widctlpar\sb36\sa36 position\cell INTEGER\cell NOT NULL\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx1660\cellx3633\cellx7322 
+\pard\intbl\widctlpar\sb36\sa36 image_url\cell VARCHAR(1024)\cell NOT NULL\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx1660\cellx3633\cellx7322 
+\pard\intbl\widctlpar\sb36\sa36 type\cell VARCHAR(255)\cell NOT NULL\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx1660\cellx3633\cellx7322 
+\pard\intbl\widctlpar\sb36\sa36 created_at\cell TIMESTAMP\cell DEFAULT CURRENT_TIMESTAMP\cell\row\trowd\trgaph108\trpaddl108\trpaddr108\trpaddfl3\trpaddfr3
+\cellx1660\cellx3633\cellx7322 
+\pard\intbl\widctlpar\sb36\sa36 updated_at\cell TIMESTAMP\cell DEFAULT CURRENT_TIMESTAMP\cell\row 
+\pard\widctlpar\sa200\par
+
+\pard\widctlpar\sb180\sa180\par
+
+\pard\sa200\sl276\slmult1\f3\fs22\lang9\par
+}
+ 

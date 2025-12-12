@@ -322,7 +322,7 @@ async def know_your_worth(
     "/generate_project_from_text",
     response_model=GenerateProjectFromTextResponse,
     summary="Generate Project Description from Brief Text",
-    description="Generate complete project details (category, subcategory, title, description, skills) from client's brief text description"
+    description="Generate complete project details (category, subcategory, title, description, skills) from client's brief text description. Requires JWT authentication."
 )
 async def generate_project_from_text(
     request: GenerateProjectFromTextRequest = Body(
@@ -334,7 +334,7 @@ async def generate_project_from_text(
             "deadline": "2026-03-15"
         }
     ),
-    authorization: str = Header(None, description="Optional JWT token for fetching categories from Project Service")
+    authorization: str = Header(..., description="JWT token required for authentication")
 ):
     """
     Generate complete project description from brief text.
@@ -384,15 +384,11 @@ async def generate_project_from_text(
         service = await get_generation_service()
         logger.info(f"Generating project from text: {request.brief_description[:50]}...")
 
-        # Extract JWT token from Authorization header if present
-        jwt_token = None
-        if authorization:
-            # Remove "Bearer " prefix if present
-            jwt_token = authorization.replace("Bearer ", "") if authorization.startswith("Bearer ") else authorization
-            logger.info(f"📨 Received Authorization header: {authorization[:30]}... (length: {len(authorization)})")
-            logger.info(f"🔑 Extracted JWT token: {jwt_token[:30]}... (length: {len(jwt_token)})")
-        else:
-            logger.warning(f"⚠️ No Authorization header received from client")
+        # Extract JWT token from Authorization header (required)
+        # Remove "Bearer " prefix if present
+        jwt_token = authorization.replace("Bearer ", "") if authorization.startswith("Bearer ") else authorization
+        logger.info(f"📨 Received Authorization header: {authorization[:30]}... (length: {len(authorization)})")
+        logger.info(f"🔑 Extracted JWT token: {jwt_token[:30]}... (length: {len(jwt_token)})")
 
         response = await service.generate_project_from_text(request, jwt_token=jwt_token)
         return response
