@@ -334,7 +334,7 @@ async def generate_project_from_text(
             "deadline": "2026-03-15"
         }
     ),
-    authorization: str = Header(..., description="JWT token required for authentication")
+    authorization: str = Header(None, description="JWT token required for authentication")
 ):
     """
     Generate complete project description from brief text.
@@ -380,11 +380,19 @@ async def generate_project_from_text(
         "complexity_level": "intermediate"
     }
     """
+    # Check if Authorization header is provided
+    if not authorization:
+        logger.error("❌ No Authorization header provided")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authorization header is required. Please provide JWT token in the format: 'Bearer <token>'"
+        )
+
     try:
         service = await get_generation_service()
         logger.info(f"Generating project from text: {request.brief_description[:50]}...")
 
-        # Extract JWT token from Authorization header (required)
+        # Extract JWT token from Authorization header
         # Remove "Bearer " prefix if present
         jwt_token = authorization.replace("Bearer ", "") if authorization.startswith("Bearer ") else authorization
         logger.info(f"📨 Received Authorization header: {authorization[:30]}... (length: {len(authorization)})")
@@ -392,6 +400,8 @@ async def generate_project_from_text(
 
         response = await service.generate_project_from_text(request, jwt_token=jwt_token)
         return response
+    except HTTPException:
+        raise  # Re-raise HTTP exceptions as-is
     except Exception as e:
         logger.exception(f"Error generating project from text: {e}")
         raise HTTPException(

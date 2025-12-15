@@ -2,6 +2,7 @@
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from app.core.config import get_settings
 from app.api.v1.router import api_router
 from loguru import logger
@@ -22,11 +23,20 @@ class HealthCheckResponse(BaseModel): # Define HealthCheckResponse here
     status: str = Field("ok", description="Status of the service.")
     version: str = Field(..., description="Version of the service.")
 
+# Configure JWT Bearer token security for Swagger UI
+security = HTTPBearer(
+    scheme_name="JWT Bearer Token",
+    description="Enter your JWT token (without 'Bearer' prefix)"
+)
+
 app = FastAPI(
     title="Hylancer AI Service",
     version="1.0.0",
     description="AI-powered microservice for Hylancer platform, offering freelancer/project recommendations and content generation.",
-    debug=settings.ENV == "dev"
+    debug=settings.ENV == "dev",
+    swagger_ui_parameters={
+        "persistAuthorization": True  # Keep authorization after page refresh
+    }
 )
 
 # Configure CORS
