@@ -101,6 +101,18 @@ class GenerateBioFromResumeRequest(BaseModel):
     """
     resume_text: str = Field(..., min_length=50, description="Resume text content (minimum 50 characters)")
 
+class Education(BaseModel):
+    """Education entry."""
+    degree: str = Field(..., description="Degree name")
+    institution: str = Field(..., description="Institution name")
+    year: str = Field(..., description="Graduation year or year range")
+
+class Certification(BaseModel):
+    """Certification entry."""
+    certificate_name: str = Field(..., description="Certificate name")
+    issuing_organization: str = Field(..., description="Issuing organization")
+    year: Optional[str] = Field(None, description="Issue year")
+
 class ParsedResumeData(BaseModel):
     """Structured data parsed from a resume."""
     name: str
@@ -111,12 +123,46 @@ class ParsedResumeData(BaseModel):
     personality_traits: Optional[List[str]] = []
 
 class GenerateBioFromResumeResponse(BaseModel):
-    """Response with generated bio from resume."""
-    bio: str
-    headline: str
-    suggested_hourly_rate: float
-    experience_level: int  # 1-5
-    parsed_data: ParsedResumeData  # Include parsed resume data for transparency
+    """Response with generated bio from resume with enhanced structured data."""
+    category: str = Field(..., description="Mapped category from Project Service")
+    sub_category: str = Field(..., description="Mapped sub-category from Project Service")
+    biography: str = Field(..., description="Professional biography")
+    skills: List[str] = Field(..., description="List of skills extracted from resume")
+    education: List[Education] = Field(default_factory=list, description="Education history")
+    certifications: List[Certification] = Field(default_factory=list, description="Certifications")
+    languages: List[str] = Field(default_factory=list, description="Languages known")
+    years_of_experience: int = Field(..., description="Total years of experience")
+    hourly_rate: float = Field(..., description="Suggested hourly rate in INR for India market")
+
+    # Keep legacy fields for backward compatibility
+    parsed_data: Optional[ParsedResumeData] = Field(None, description="Legacy parsed resume data (deprecated, use root fields instead)")
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "category": "IT And Development",
+                "sub_category": "Full Stack Development",
+                "biography": "Experienced full-stack developer with 8 years of expertise in building scalable web applications...",
+                "skills": ["Python", "React", "Node.js", "AWS", "Docker", "PostgreSQL"],
+                "education": [
+                    {
+                        "degree": "B.Tech in Computer Science",
+                        "institution": "IIT Delhi",
+                        "year": "2015"
+                    }
+                ],
+                "certifications": [
+                    {
+                        "certificate_name": "AWS Certified Solutions Architect",
+                        "issuing_organization": "Amazon Web Services",
+                        "year": "2022"
+                    }
+                ],
+                "languages": ["English", "Hindi", "Tamil"],
+                "years_of_experience": 8,
+                "hourly_rate": 2500.0
+            }
+        }
 
 class KnowYourWorthRequest(BaseModel):
     """

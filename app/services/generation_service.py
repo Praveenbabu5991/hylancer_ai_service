@@ -95,56 +95,80 @@ class GenerationService:
 
     async def generate_bio_from_resume(
         self,
-        request: GenerateBioFromResumeRequest
+        request: GenerateBioFromResumeRequest,
+        jwt_token: Optional[str] = None
     ) -> GenerateBioFromResumeResponse:
         """
-        Generate a professional bio by parsing a resume and using extracted data.
+        Generate enhanced profile by parsing resume with category mapping and India market rate.
 
         This method:
-        1. Parses the resume text to extract structured data
-        2. Uses the extracted data to generate a professional bio
+        1. Parses the resume to extract structured data (skills, education, certifications, languages)
+        2. Calls Project Service API to get categories
+        3. Maps skills to best matching category/subcategory
+        4. Generates professional biography
+        5. Calculates hourly rate for India market
 
         Args:
             request: Contains the resume text
+            jwt_token: Optional JWT token for calling Project Service API
 
         Returns:
-            GenerateBioFromResumeResponse with bio, headline, rate, level, and parsed data
+            GenerateBioFromResumeResponse with category, biography, skills, education, certifications, languages, experience, and India market hourly rate
         """
-        logger.info("Starting bio generation from resume")
+        logger.info("Starting enhanced profile generation from resume")
 
         try:
-            # Step 1: Parse the resume to extract structured data
+            # Step 1: Parse the resume to extract all structured data
             logger.info("Parsing resume to extract structured data")
-            parsed_data = await self._parse_resume(request.resume_text)
+            parsed_data_enhanced = await self._parse_resume_enhanced(request.resume_text)
 
-            # Step 2: Create a bio generation request from parsed data
-            bio_request = GenerateBioDescriptionRequest(
-                name=parsed_data.name,
-                title=parsed_data.title,
-                skills=parsed_data.skills,
-                years_of_experience=parsed_data.years_of_experience,
-                top_achievements=parsed_data.top_achievements,
-                personality_traits=parsed_data.personality_traits or []
+            # Step 2: Fetch categories from Project Service and map skills
+            logger.info("Fetching categories from Project Service")
+            category, sub_category = await self._map_skills_to_category(
+                parsed_data_enhanced['skills'],
+                jwt_token
             )
 
-            # Step 3: Generate bio using the existing method
-            logger.info("Generating bio from parsed data")
-            bio_response = await self.generate_bio_description(bio_request)
+            # Step 3: Generate professional biography
+            logger.info("Generating professional biography")
+            biography = await self._generate_biography_from_parsed_data(parsed_data_enhanced)
 
-            # Step 4: Combine results
+            # Step 4: Calculate India market hourly rate
+            logger.info("Calculating India market hourly rate")
+            hourly_rate = self._calculate_india_hourly_rate(
+                skills=parsed_data_enhanced['skills'],
+                years_of_experience=parsed_data_enhanced['years_of_experience'],
+                education=parsed_data_enhanced['education'],
+                certifications=parsed_data_enhanced['certifications']
+            )
+
+            # Step 5: Build response
             result = GenerateBioFromResumeResponse(
-                bio=bio_response.bio,
-                headline=bio_response.headline,
-                suggested_hourly_rate=bio_response.suggested_hourly_rate,
-                experience_level=bio_response.experience_level,
-                parsed_data=parsed_data
+                category=category,
+                sub_category=sub_category,
+                biography=biography,
+                skills=parsed_data_enhanced['skills'],
+                education=parsed_data_enhanced['education'],
+                certifications=parsed_data_enhanced['certifications'],
+                languages=parsed_data_enhanced['languages'],
+                years_of_experience=parsed_data_enhanced['years_of_experience'],
+                hourly_rate=hourly_rate,
+                # Legacy field for backward compatibility
+                parsed_data=ParsedResumeData(
+                    name=parsed_data_enhanced.get('name', 'Professional'),
+                    title=parsed_data_enhanced.get('title', 'Experienced Professional'),
+                    skills=parsed_data_enhanced['skills'],
+                    years_of_experience=parsed_data_enhanced['years_of_experience'],
+                    top_achievements=parsed_data_enhanced.get('achievements', []),
+                    personality_traits=parsed_data_enhanced.get('traits', [])
+                )
             )
 
-            logger.info("Successfully generated bio from resume")
+            logger.info("Successfully generated enhanced profile from resume")
             return result
 
         except Exception as e:
-            logger.exception(f"Error generating bio from resume: {e}")
+            logger.exception(f"Error generating profile from resume: {e}")
             raise
 
     async def _parse_resume(self, resume_text: str) -> ParsedResumeData:
@@ -273,6 +297,352 @@ IMPORTANT:
             top_achievements=achievements[:5],  # Limit to 5 achievements
             personality_traits=traits[:5]  # Limit to 5 traits
         )
+
+    async def _parse_resume_enhanced(self, resume_text: str) -> dict:
+        """
+        Enhanced resume parsing to extract education, certifications, and languages.
+
+        Args:
+            resume_text: The raw resume text
+
+        Returns:
+            Dictionary with all extracted fields
+        """
+        logger.info("Enhanced parsing of resume with LLM")
+
+        prompt = f"""You are an expert resume parser. Extract comprehensive structured information from the following resume.
+
+Resume Text:
+{resume_text}
+
+Please extract and provide ALL of the following information:
+1. Full name
+2. Professional title/role
+3. Technical skills (list 5-20 skills)
+4. Total years of professional experience
+5. Education history (degree, institution, graduation year)
+6. Certifications (certificate name, issuing organization, year)
+7. Languages known (e.g., English, Hindi, etc.)
+8. Top 3-5 achievements
+
+Format your response EXACTLY as follows:
+NAME: [full name]
+TITLE: [professional title]
+SKILLS: [skill1, skill2, skill3, ...]
+YEARS: [number only]
+EDUCATION:
+- [Degree], [Institution], [Year]
+- [Degree], [Institution], [Year]
+CERTIFICATIONS:
+- [Certificate Name], [Issuing Org], [Year]
+- [Certificate Name], [Issuing Org], [Year]
+LANGUAGES: [language1, language2, language3, ...]
+ACHIEVEMENTS:
+- [achievement 1]
+- [achievement 2]
+- [achievement 3]
+
+IMPORTANT:
+- For YEARS, provide only a number
+- List skills separated by commas
+- For EDUCATION, use format: Degree, Institution, Year (one per line with dash)
+- For CERTIFICATIONS, use format: Certificate Name, Issuing Org, Year (one per line with dash)
+- List languages separated by commas
+- If information is not available, skip that section"""
+
+        try:
+            response_text = await generate_text(prompt)
+            parsed_data = self._parse_enhanced_response(response_text)
+            logger.info(f"Successfully parsed enhanced resume data")
+            return parsed_data
+
+        except Exception as e:
+            logger.exception(f"Error parsing enhanced resume: {e}")
+            raise ValueError(f"Failed to parse resume: {str(e)}")
+
+    def _parse_enhanced_response(self, response_text: str) -> dict:
+        """
+        Parse the enhanced LLM response for resume extraction.
+
+        Args:
+            response_text: The LLM's response
+
+        Returns:
+            Dictionary with all parsed fields
+        """
+        from app.schemas.generation import Education, Certification
+
+        lines = response_text.strip().split("\n")
+
+        name = "Professional"
+        title = "Experienced Professional"
+        skills = []
+        years = 3
+        education = []
+        certifications = []
+        languages = []
+        achievements = []
+
+        current_field = None
+
+        for line in lines:
+            line = line.strip()
+            if not line:
+                continue
+
+            if line.startswith("NAME:"):
+                name = line.replace("NAME:", "").strip()
+            elif line.startswith("TITLE:"):
+                title = line.replace("TITLE:", "").strip()
+            elif line.startswith("SKILLS:"):
+                skills_str = line.replace("SKILLS:", "").strip()
+                skills = [s.strip() for s in skills_str.split(",") if s.strip()]
+            elif line.startswith("YEARS:"):
+                try:
+                    years_str = line.replace("YEARS:", "").strip()
+                    years = int(''.join(filter(str.isdigit, years_str)) or "3")
+                    years = max(0, min(50, years))
+                except:
+                    years = 3
+            elif line.startswith("EDUCATION:"):
+                current_field = "education"
+            elif line.startswith("CERTIFICATIONS:"):
+                current_field = "certifications"
+            elif line.startswith("LANGUAGES:"):
+                langs_str = line.replace("LANGUAGES:", "").strip()
+                languages = [l.strip() for l in langs_str.split(",") if l.strip()]
+                current_field = None
+            elif line.startswith("ACHIEVEMENTS:"):
+                current_field = "achievements"
+            elif current_field == "education" and line.startswith("-"):
+                parts = line.lstrip("- ").split(",")
+                if len(parts) >= 3:
+                    education.append(Education(
+                        degree=parts[0].strip(),
+                        institution=parts[1].strip(),
+                        year=parts[2].strip()
+                    ))
+                elif len(parts) == 2:
+                    education.append(Education(
+                        degree=parts[0].strip(),
+                        institution=parts[1].strip(),
+                        year="N/A"
+                    ))
+            elif current_field == "certifications" and line.startswith("-"):
+                parts = line.lstrip("- ").split(",")
+                if len(parts) >= 2:
+                    certifications.append(Certification(
+                        certificate_name=parts[0].strip(),
+                        issuing_organization=parts[1].strip(),
+                        year=parts[2].strip() if len(parts) >= 3 else None
+                    ))
+            elif current_field == "achievements" and line.startswith("-"):
+                achievement = line.lstrip("- ").strip()
+                if achievement:
+                    achievements.append(achievement)
+
+        # Set defaults if not found
+        if not skills:
+            skills = ["Communication", "Problem Solving", "Teamwork"]
+        if not languages:
+            languages = ["English"]
+
+        return {
+            'name': name,
+            'title': title,
+            'skills': skills[:20],
+            'years_of_experience': years,
+            'education': education,
+            'certifications': certifications,
+            'languages': languages,
+            'achievements': achievements[:5],
+            'traits': []
+        }
+
+    async def _map_skills_to_category(self, skills: List[str], jwt_token: Optional[str] = None) -> tuple:
+        """
+        Map skills to category and sub-category by calling Project Service API.
+
+        This method REQUIRES a valid JWT token and always calls Project Service API.
+        No fallback categories are used - will raise exception if API call fails.
+
+        Args:
+            skills: List of skills to map
+            jwt_token: JWT token for authentication (required)
+
+        Returns:
+            Tuple of (category, sub_category) from Project Service API
+
+        Raises:
+            Exception: If JWT token is missing, invalid, or Project Service API fails
+        """
+        from app.clients.project_service_client import ProjectServiceClient
+
+        settings = get_settings()
+
+        # Fetch categories from Project Service (will raise exception if JWT token is invalid)
+        logger.info(f"📞 Calling Project Service API to fetch categories with JWT token")
+        project_client = ProjectServiceClient(settings.PROJECT_SERVICE_URL, jwt_token=jwt_token)
+        categories_dict = await project_client.get_categories_and_subcategories()
+
+        if not categories_dict:
+            logger.error("❌ No categories returned from Project Service API")
+            raise ValueError("Failed to fetch categories from Project Service API. Please ensure the Project Service is running and accessible.")
+
+        # Use LLM to map skills to best matching category
+        logger.info(f"Using AI to map {len(skills)} skills to best category")
+        skills_str = ", ".join(skills)
+        categories_text = "\n".join([
+            f"- {category}: {', '.join(subcategories)}"
+            for category, subcategories in categories_dict.items()
+        ])
+
+        prompt = f"""Given the following skills of a freelancer:
+{skills_str}
+
+And the available categories and subcategories:
+{categories_text}
+
+Select the MOST APPROPRIATE category and subcategory that best matches these skills.
+
+Format your response EXACTLY as:
+CATEGORY: [category name]
+SUBCATEGORY: [subcategory name]
+
+Choose only from the categories and subcategories provided above."""
+
+        response_text = await generate_text(prompt)
+
+        # Parse the response
+        category = None
+        sub_category = None
+
+        for line in response_text.strip().split("\n"):
+            if line.startswith("CATEGORY:"):
+                category = line.replace("CATEGORY:", "").strip()
+            elif line.startswith("SUBCATEGORY:"):
+                sub_category = line.replace("SUBCATEGORY:", "").strip()
+
+        if not category or not sub_category:
+            logger.error(f"❌ Failed to parse category mapping from AI response: {response_text}")
+            raise ValueError("AI failed to map skills to category. Please try again.")
+
+        logger.info(f"✅ Successfully mapped skills to: {category} - {sub_category}")
+        return (category, sub_category)
+
+    async def _generate_biography_from_parsed_data(self, parsed_data: dict) -> str:
+        """
+        Generate professional biography from parsed resume data.
+
+        Args:
+            parsed_data: Dictionary with parsed resume data
+
+        Returns:
+            Professional biography string
+        """
+        skills_str = ", ".join(parsed_data['skills'][:10])
+        achievements_str = "\n".join([f"- {a}" for a in parsed_data['achievements']]) if parsed_data['achievements'] else "Various professional achievements"
+
+        education_str = ", ".join([f"{e.degree} from {e.institution}" for e in parsed_data['education'][:2]]) if parsed_data['education'] else "relevant education"
+
+        prompt = f"""You are a professional biography writer for freelancers. Write a compelling 150-200 word biography.
+
+Professional Details:
+- Title: {parsed_data['title']}
+- Years of Experience: {parsed_data['years_of_experience']}
+- Skills: {skills_str}
+- Education: {education_str}
+- Key Achievements:
+{achievements_str}
+
+Write a professional biography that:
+1. Highlights expertise and experience
+2. Showcases key achievements
+3. Demonstrates value proposition
+4. Has a professional yet approachable tone
+5. Is 150-200 words long
+
+Return ONLY the biography text, no extra formatting or labels."""
+
+        try:
+            biography = await generate_text(prompt)
+            return biography.strip()
+        except Exception as e:
+            logger.error(f"Error generating biography: {e}")
+            return f"Experienced {parsed_data['title']} with {parsed_data['years_of_experience']} years of expertise in {skills_str}."
+
+    def _calculate_india_hourly_rate(
+        self,
+        skills: List[str],
+        years_of_experience: int,
+        education: List,
+        certifications: List
+    ) -> float:
+        """
+        Calculate suggested hourly rate for India market.
+
+        Args:
+            skills: List of skills
+            years_of_experience: Years of experience
+            education: List of Education objects
+            certifications: List of Certification objects
+
+        Returns:
+            Hourly rate in INR
+        """
+        # Base rate for India market (INR per hour)
+        base_rate = 500.0
+
+        # Experience multiplier
+        if years_of_experience <= 2:
+            exp_multiplier = 1.0
+        elif years_of_experience <= 5:
+            exp_multiplier = 1.5
+        elif years_of_experience <= 8:
+            exp_multiplier = 2.0
+        elif years_of_experience <= 12:
+            exp_multiplier = 2.5
+        else:
+            exp_multiplier = 3.0
+
+        # Skills premium (high-demand tech skills)
+        premium_skills = [
+            'AWS', 'Azure', 'GCP', 'Kubernetes', 'Docker', 'React', 'Angular', 'Vue',
+            'Node.js', 'Python', 'Java', 'Golang', 'Rust', 'Machine Learning', 'AI',
+            'Data Science', 'Blockchain', 'DevOps', 'Microservices', 'System Design'
+        ]
+
+        skill_count = sum(1 for skill in skills if any(premium.lower() in skill.lower() for premium in premium_skills))
+        skill_premium = 1.0 + (skill_count * 0.1)  # 10% bonus per premium skill
+
+        # Education bonus
+        education_bonus = 1.0
+        if education:
+            for edu in education:
+                degree_lower = edu.degree.lower()
+                if 'master' in degree_lower or 'mtech' in degree_lower or 'm.tech' in degree_lower:
+                    education_bonus = max(education_bonus, 1.2)
+                elif 'phd' in degree_lower or 'doctorate' in degree_lower:
+                    education_bonus = max(education_bonus, 1.3)
+                elif 'bachelor' in degree_lower or 'btech' in degree_lower or 'b.tech' in degree_lower:
+                    education_bonus = max(education_bonus, 1.1)
+
+        # Certification bonus
+        cert_bonus = 1.0 + (len(certifications) * 0.05)  # 5% per certification
+        cert_bonus = min(cert_bonus, 1.3)  # Cap at 30%
+
+        # Calculate final rate
+        hourly_rate = base_rate * exp_multiplier * skill_premium * education_bonus * cert_bonus
+
+        # Round to nearest 50
+        hourly_rate = round(hourly_rate / 50) * 50
+
+        # Ensure minimum and maximum bounds for India market
+        hourly_rate = max(500.0, min(hourly_rate, 10000.0))
+
+        logger.info(f"Calculated India hourly rate: ₹{hourly_rate} (base: {base_rate}, exp: {exp_multiplier}x, skills: {skill_premium}x, edu: {education_bonus}x, cert: {cert_bonus}x)")
+
+        return hourly_rate
 
     def _build_project_prompt(self, request: GenerateProjectDescriptionRequest) -> str:
         """Build prompt for project description generation."""

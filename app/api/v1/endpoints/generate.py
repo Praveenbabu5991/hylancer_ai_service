@@ -141,10 +141,11 @@ async def generate_bio_description(
     "/generate_bio_from_resume",
     response_model=GenerateBioFromResumeResponse,
     summary="Generate Bio from Resume File",
-    description="Upload a resume file (PDF, DOCX, TXT) and generate a professional bio using AI"
+    description="Upload a resume file (PDF, DOCX, TXT) and generate a professional bio using AI. Requires JWT authentication."
 )
 async def generate_bio_from_resume(
-    file: UploadFile = File(..., description="Resume file (PDF, DOCX, or TXT format)")
+    file: UploadFile = File(..., description="Resume file (PDF, DOCX, or TXT format)"),
+    authorization: str = Header(None, description="JWT token required for authentication and category mapping")
 ):
     """
     Parse a resume file and generate a professional bio for a hylancer using AI.
@@ -152,16 +153,22 @@ async def generate_bio_from_resume(
     This endpoint:
     1. Accepts a resume file upload (PDF, DOCX, or TXT)
     2. Extracts text from the file
-    3. Parses the resume to extract structured information (name, title, skills, experience, achievements)
-    4. Generates a professional bio based on the extracted data
-    5. Returns the bio along with the parsed data for transparency
+    3. Calls Project Service API to fetch categories and subcategories
+    4. Parses the resume to extract structured information (skills, experience, education, certifications)
+    5. Maps skills to appropriate category and subcategory
+    6. Generates a professional biography based on the extracted data
+    7. Calculates suggested hourly rate for India market
 
-    Creates:
-    - A professional bio (150-250 words)
-    - A compelling headline
-    - Suggested hourly rate
-    - Experience level (1-5)
-    - Parsed resume data (name, title, skills, years of experience, achievements, traits)
+    Output includes:
+    - category: Mapped category from Project Service
+    - sub_category: Mapped subcategory from Project Service
+    - biography: Professional biography (150-200 words)
+    - skills: List of extracted skills
+    - education: Education history with degree, institution, year
+    - certifications: Certifications with certificate name, issuing org, year
+    - languages: Languages known
+    - years_of_experience: Total years of professional experience
+    - hourly_rate: Suggested hourly rate in INR for India market
 
     Supported file formats:
     - PDF (.pdf)
@@ -169,7 +176,17 @@ async def generate_bio_from_resume(
     - Plain Text (.txt)
 
     File size limit: 10 MB
+
+    Requires: JWT authentication token for category mapping via Project Service API
     """
+    # Check if Authorization header is provided
+    if not authorization:
+        logger.error("❌ No Authorization header provided for resume parsing")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authorization header is required. Please provide JWT token in the format: 'Bearer <token>'"
+        )
+
     # Validate file size (10 MB limit)
     MAX_FILE_SIZE = 10 * 1024 * 1024  # 10 MB in bytes
 
@@ -218,11 +235,17 @@ async def generate_bio_from_resume(
         # Create request object
         request = GenerateBioFromResumeRequest(resume_text=resume_text)
 
+        # Extract JWT token from Authorization header
+        jwt_token = authorization.replace("Bearer ", "") if authorization.startswith("Bearer ") else authorization
+        logger.info(f"📨 Received Authorization header for resume parsing: {authorization[:30]}... (length: {len(authorization)})")
+        logger.info(f"🔑 Extracted JWT token: {jwt_token[:30]}... (length: {len(jwt_token)})")
+
         # Generate bio from resume
         service = await get_generation_service()
-        response = await service.generate_bio_from_resume(request)
+        logger.info(f"Generating bio from resume using AI and Project Service API for category mapping...")
+        response = await service.generate_bio_from_resume(request, jwt_token=jwt_token)
 
-        logger.info(f"Successfully generated bio from resume for: {response.parsed_data.name}")
+        logger.info(f"✅ Successfully generated bio from resume - Category: {response.category}, Sub-category: {response.sub_category}, Hourly Rate: ₹{response.hourly_rate}")
         return response
 
     except HTTPException:
