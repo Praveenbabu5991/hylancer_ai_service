@@ -38,16 +38,10 @@ class GenerateProjectFromTextRequest(BaseModel):
 
     Example:
     {
-        "brief_description": "I need someone to build a mobile app for my restaurant",
-        "budget": 50000,
-        "budget_type": "Fixed-Price",
-        "deadline": "2026-03-15"
+        "brief_description": "I need someone to build a mobile app for my restaurant with online ordering and delivery tracking"
     }
     """
     brief_description: str = Field(..., min_length=10, description="Brief description of what the client needs")
-    budget: Optional[float] = Field(None, gt=0, description="Optional budget amount")
-    budget_type: Optional[str] = Field("Fixed-Price", pattern="^(Fixed-Price|Hourly)$", description="Budget type")
-    deadline: Optional[str] = Field(None, description="Optional project deadline (YYYY-MM-DD)")
 
 class GenerateProjectFromTextResponse(BaseModel):
     """Response with complete project details generated from text."""

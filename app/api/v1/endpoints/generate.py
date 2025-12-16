@@ -351,10 +351,7 @@ async def generate_project_from_text(
     request: GenerateProjectFromTextRequest = Body(
         ...,
         example={
-            "brief_description": "I need someone to build a mobile app for my restaurant with online ordering and delivery tracking",
-            "budget": 50000,
-            "budget_type": "Fixed-Price",
-            "deadline": "2026-03-15"
+            "brief_description": "I need someone to build a mobile app for my restaurant with online ordering and delivery tracking"
         }
     ),
     authorization: str = Header(None, description="JWT token required for authentication")
@@ -366,30 +363,25 @@ async def generate_project_from_text(
     1. Fetches available categories and subcategories from Project Service
     2. Uses AI to map the client's brief description to the most appropriate category/subcategory
     3. Generates a professional project title
-    4. Creates a detailed project description (200-400 words)
+    4. Creates a detailed project description (200-400 words) without budget or deadline mentions
     5. Suggests relevant skills required
     6. Estimates project duration and complexity
 
     Input:
-    - brief_description: Client's brief text (e.g., "I need a mobile app for my restaurant")
-    - budget (optional): Project budget
-    - budget_type (optional): "Fixed-Price" or "Hourly"
-    - deadline (optional): Project deadline
+    - brief_description: Client's brief text describing what they need
 
     Output:
     - category: Selected category from Project Service
     - sub_category: Selected subcategory from Project Service
     - title: Professional project title
-    - description: Detailed project description
+    - description: Detailed project description (without budget/deadline information)
     - suggested_skills: List of relevant skills
     - estimated_duration: Estimated project duration
     - complexity_level: beginner/intermediate/expert
 
     Example request:
     {
-        "brief_description": "Build a mobile app for restaurant",
-        "budget": 50000,
-        "deadline": "2026-03-15"
+        "brief_description": "I need someone to build a mobile app for my restaurant with online ordering and delivery tracking"
     }
 
     Example response:
@@ -397,8 +389,8 @@ async def generate_project_from_text(
         "category": "IT And Development",
         "sub_category": "Mobile App Development",
         "title": "Restaurant Mobile App with Online Ordering & Delivery Tracking",
-        "description": "We are seeking an experienced mobile app developer to create...",
-        "suggested_skills": ["React Native", "Firebase", "Payment Gateway Integration", "Google Maps API"],
+        "description": "We are seeking an experienced mobile app developer to create a comprehensive solution for our restaurant business. The mobile application should provide seamless online ordering capabilities and real-time delivery tracking features. The app should have an intuitive user interface that allows customers to browse the menu, customize their orders, and complete secure payments. Key deliverables include iOS and Android native applications, an admin dashboard for order management, integration with payment gateways, and GPS-based delivery tracking. The solution should be scalable, secure, and optimized for performance. Success will be measured by user adoption rates, order completion efficiency, and customer satisfaction scores.",
+        "suggested_skills": ["React Native", "Firebase", "Payment Gateway Integration", "Google Maps API", "Node.js"],
         "estimated_duration": "2-3 months",
         "complexity_level": "intermediate"
     }

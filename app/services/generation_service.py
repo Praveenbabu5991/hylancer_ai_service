@@ -1423,18 +1423,17 @@ Client's Brief Description:
 Available Categories and Subcategories:
 {categories_text}
 
-Budget: {"₹" + str(request.budget) if request.budget else "Not specified"}
-Budget Type: {request.budget_type}
-Deadline: {request.deadline if request.deadline else "Not specified"}
-
-IMPORTANT: You MUST select a category and subcategory from the list above. Use the EXACT names as provided.
+IMPORTANT:
+- You MUST select a category and subcategory from the list above. Use the EXACT names as provided.
+- DO NOT mention budget, pricing, rates, or deadline information in the project description.
+- Focus on project goals, deliverables, technical requirements, and success criteria.
 
 Provide your response in this EXACT format:
 
 CATEGORY: [exact category name from the list]
 SUBCATEGORY: [exact subcategory name from the list]
 TITLE: [professional project title, max 80 characters]
-DESCRIPTION: [detailed project description, 200-400 words, include project goals, deliverables, technical requirements, and success criteria]
+DESCRIPTION: [detailed project description, 200-400 words, include project goals, deliverables, technical requirements, and success criteria. DO NOT mention budget or deadline.]
 SKILLS: [skill1, skill2, skill3, skill4, skill5]
 DURATION: [estimated duration like "2-3 months", "4-6 weeks"]
 COMPLEXITY: [beginner, intermediate, or expert]"""
