@@ -125,6 +125,7 @@ class GenerateBioFromResumeResponse(BaseModel):
     education: List[Education] = Field(default_factory=list, description="Education history")
     certifications: List[Certification] = Field(default_factory=list, description="Certifications")
     languages: List[str] = Field(default_factory=list, description="Languages known")
+    location: Optional[str] = Field(None, description="Location/City if specified in resume")
     years_of_experience: int = Field(..., description="Total years of experience")
     hourly_rate: float = Field(..., description="Suggested hourly rate in INR for India market")
 
@@ -153,6 +154,7 @@ class GenerateBioFromResumeResponse(BaseModel):
                     }
                 ],
                 "languages": ["English", "Hindi", "Tamil"],
+                "location": "Bangalore, India",
                 "years_of_experience": 8,
                 "hourly_rate": 2500.0
             }

@@ -151,6 +151,7 @@ class GenerationService:
                 education=parsed_data_enhanced['education'],
                 certifications=parsed_data_enhanced['certifications'],
                 languages=parsed_data_enhanced['languages'],
+                location=parsed_data_enhanced.get('location'),
                 years_of_experience=parsed_data_enhanced['years_of_experience'],
                 hourly_rate=hourly_rate,
                 # Legacy field for backward compatibility
@@ -318,16 +319,18 @@ Resume Text:
 Please extract and provide ALL of the following information:
 1. Full name
 2. Professional title/role
-3. Technical skills (list 5-20 skills)
-4. Total years of professional experience
-5. Education history (degree, institution, graduation year)
-6. Certifications (certificate name, issuing organization, year)
-7. Languages known (e.g., English, Hindi, etc.)
-8. Top 3-5 achievements
+3. Location/City (if mentioned)
+4. Technical skills (list 5-20 skills)
+5. Total years of professional experience
+6. Education history (degree, institution, graduation year)
+7. Certifications (certificate name, issuing organization, year)
+8. Languages known (e.g., English, Hindi, etc.)
+9. Top 3-5 achievements
 
 Format your response EXACTLY as follows:
 NAME: [full name]
 TITLE: [professional title]
+LOCATION: [city/location if mentioned, otherwise skip this line]
 SKILLS: [skill1, skill2, skill3, ...]
 YEARS: [number only]
 EDUCATION:
@@ -345,6 +348,7 @@ ACHIEVEMENTS:
 IMPORTANT:
 - For YEARS, provide only a number
 - List skills separated by commas
+- For LOCATION, provide city/state/country if mentioned (e.g., "Bangalore, India" or "Mumbai")
 - For EDUCATION, use format: Degree, Institution, Year (one per line with dash)
 - For CERTIFICATIONS, use format: Certificate Name, Issuing Org, Year (one per line with dash)
 - List languages separated by commas
@@ -376,6 +380,7 @@ IMPORTANT:
 
         name = "Professional"
         title = "Experienced Professional"
+        location = None
         skills = []
         years = 3
         education = []
@@ -394,6 +399,8 @@ IMPORTANT:
                 name = line.replace("NAME:", "").strip()
             elif line.startswith("TITLE:"):
                 title = line.replace("TITLE:", "").strip()
+            elif line.startswith("LOCATION:"):
+                location = line.replace("LOCATION:", "").strip()
             elif line.startswith("SKILLS:"):
                 skills_str = line.replace("SKILLS:", "").strip()
                 skills = [s.strip() for s in skills_str.split(",") if s.strip()]
@@ -450,6 +457,7 @@ IMPORTANT:
         return {
             'name': name,
             'title': title,
+            'location': location,
             'skills': skills[:20],
             'years_of_experience': years,
             'education': education,

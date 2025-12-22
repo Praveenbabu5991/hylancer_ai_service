@@ -167,6 +167,7 @@ async def generate_bio_from_resume(
     - education: Education history with degree, institution, year
     - certifications: Certifications with certificate name, issuing org, year
     - languages: Languages known
+    - location: Location/City if specified in resume
     - years_of_experience: Total years of professional experience
     - hourly_rate: Suggested hourly rate in INR for India market
 
