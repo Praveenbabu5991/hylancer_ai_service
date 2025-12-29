@@ -272,7 +272,7 @@ async def generate_bio_from_resume(
     "/know_your_worth",
     response_model=KnowYourWorthResponse,
     summary="Know Your Worth Calculator",
-    description="Calculate freelancer worth in Indian market context with AI-powered insights"
+    description="Calculate freelancer worth for remote/freelance work with AI-powered insights (location-independent)"
 )
 async def know_your_worth(
     request: KnowYourWorthRequest = Body(
@@ -281,7 +281,6 @@ async def know_your_worth(
             "skills": ["Python", "Django", "React", "AWS", "Docker", "PostgreSQL"],
             "years_of_experience": 5,
             "specialization": "Full-Stack Development",
-            "city": "Bangalore",
             "education_level": "Bachelor's",
             "english_proficiency": "Fluent",
             "certifications": ["AWS Certified Solutions Architect", "Google Cloud Professional"],
@@ -290,11 +289,11 @@ async def know_your_worth(
     )
 ):
     """
-    Calculate freelancer worth in Indian market context.
+    Calculate freelancer worth for remote/freelance work (location-independent).
 
     This endpoint:
     1. Calculates estimated hourly rate based on multiple factors
-    2. Considers Indian market dynamics (location, skills demand, etc.)
+    2. Provides location-independent rate calculation suitable for remote/freelance work
     3. Provides detailed breakdown of worth calculation
     4. Offers AI-powered market insights and positioning
     5. Gives personalized recommendations to increase earning potential
@@ -302,11 +301,11 @@ async def know_your_worth(
     Factors considered:
     - Years of experience and specialization
     - Skills (with premium for high-demand technologies)
-    - Location (Tier 1, 2, 3 cities in India)
     - Education level (Bachelor's, Master's, PhD)
     - Professional certifications
     - Portfolio size and quality
     - Client reviews and reputation
+    - English proficiency
 
     Returns:
     - Estimated hourly rate (INR and USD)
@@ -322,7 +321,6 @@ async def know_your_worth(
         "skills": ["Python", "Django", "React", "AWS"],
         "years_of_experience": 5,
         "specialization": "Full-Stack Development",
-        "city": "Bangalore",
         "education_level": "Bachelor's",
         "english_proficiency": "Fluent",
         "certifications": ["AWS Certified", "Google Cloud Professional"],

@@ -162,7 +162,7 @@ class GenerateBioFromResumeResponse(BaseModel):
 
 class KnowYourWorthRequest(BaseModel):
     """
-    Request to calculate freelancer worth in Indian context.
+    Request to calculate freelancer worth for freelance/remote work context.
 
     Example:
     {
@@ -170,7 +170,6 @@ class KnowYourWorthRequest(BaseModel):
         "skills": ["Python", "Django", "React", "AWS"],
         "years_of_experience": 5,
         "specialization": "Full-Stack Development",
-        "city": "Bangalore",
         "education_level": "Bachelor's",
         "english_proficiency": "Fluent",
         "certifications": ["AWS Certified", "Google Cloud Professional"],
@@ -182,7 +181,6 @@ class KnowYourWorthRequest(BaseModel):
     skills: List[str] = Field(..., min_items=1, max_items=20, description="Technical skills")
     years_of_experience: int = Field(..., ge=0, le=50, description="Years of professional experience")
     specialization: str = Field(..., min_length=3, description="Primary specialization/domain")
-    city: str = Field(..., min_length=2, description="City in India")
     education_level: str = Field(..., description="Education level: High School, Bachelor's, Master's, PhD")
     english_proficiency: str = Field(..., description="English proficiency: Basic, Intermediate, Fluent, Native")
     certifications: Optional[List[str]] = Field(default=[], description="Professional certifications")
@@ -194,7 +192,6 @@ class WorthBreakdown(BaseModel):
     base_rate: float
     experience_multiplier: float
     skill_premium: float
-    location_adjustment: float
     education_bonus: float
     certification_bonus: float
     portfolio_bonus: float

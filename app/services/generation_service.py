@@ -888,11 +888,11 @@ LEVEL: [experience level as number 1-5]"""
         request: KnowYourWorthRequest
     ) -> KnowYourWorthResponse:
         """
-        Calculate freelancer worth in Indian market context.
+        Calculate freelancer worth for remote/freelance work context.
 
         This method:
         1. Calculates base rate based on experience and specialization
-        2. Applies multipliers for skills, location, education, certifications, portfolio
+        2. Applies multipliers for skills, education, certifications, portfolio (location-independent)
         3. Provides market insights using AI
         4. Gives personalized recommendations
 
@@ -913,18 +913,16 @@ LEVEL: [experience level as number 1-5]"""
         # Step 2: Calculate multipliers
         experience_multiplier = self._calculate_experience_multiplier(request.years_of_experience)
         skill_premium = self._calculate_skill_premium(request.skills)
-        location_adjustment = self._calculate_location_adjustment(request.city)
         education_bonus = self._calculate_education_bonus(request.education_level)
         certification_bonus = self._calculate_certification_bonus(request.certifications)
         portfolio_bonus = self._calculate_portfolio_bonus(request.portfolio_projects)
         reputation_bonus = self._calculate_reputation_bonus(request.client_reviews_average)
 
-        # Step 3: Calculate final hourly rate
+        # Step 3: Calculate final hourly rate (location-independent for freelance work)
         hourly_rate_inr = (
             base_rate *
             (1 + experience_multiplier) *
-            (1 + skill_premium) *
-            (1 + location_adjustment) +
+            (1 + skill_premium) +
             education_bonus +
             certification_bonus +
             portfolio_bonus +
@@ -946,7 +944,6 @@ LEVEL: [experience level as number 1-5]"""
             base_rate=base_rate,
             experience_multiplier=experience_multiplier,
             skill_premium=skill_premium,
-            location_adjustment=location_adjustment,
             education_bonus=education_bonus,
             certification_bonus=certification_bonus,
             portfolio_bonus=portfolio_bonus,
@@ -959,8 +956,7 @@ LEVEL: [experience level as number 1-5]"""
         # Step 6: Generate comparison message
         comparison_message = self._generate_comparison_message(
             request.years_of_experience,
-            hourly_rate_inr,
-            request.city
+            hourly_rate_inr
         )
 
         # Step 7: Generate recommendations
@@ -1048,22 +1044,6 @@ LEVEL: [experience level as number 1-5]"""
 
         skill_count = sum(1 for skill in skills if skill.lower() in premium_skills)
         return min(skill_count * 0.05, 0.5)
-
-    def _calculate_location_adjustment(self, city: str) -> float:
-        """Calculate location-based adjustment for Indian cities (-0.2 to 0.3)."""
-        city_lower = city.lower()
-
-        # Tier 1 cities (higher rates)
-        tier1 = ["bangalore", "bengaluru", "mumbai", "delhi", "ncr", "gurgaon", "noida", "hyderabad", "pune"]
-        # Tier 2 cities (moderate rates)
-        tier2 = ["chennai", "kolkata", "ahmedabad", "jaipur", "chandigarh", "kochi", "indore"]
-
-        if any(t1 in city_lower for t1 in tier1):
-            return 0.2
-        elif any(t2 in city_lower for t2 in tier2):
-            return 0.05
-        else:
-            return -0.1  # Tier 3 cities
 
     def _calculate_education_bonus(self, education: str) -> float:
         """Calculate education bonus in INR/hour."""
@@ -1242,11 +1222,10 @@ Keep each point concise (max 15 words). Focus on Indian freelance market context
     def _generate_comparison_message(
         self,
         years_of_experience: int,
-        hourly_rate: float,
-        city: str
+        hourly_rate: float
     ) -> str:
-        """Generate comparison message for the freelancer."""
-        # Average rates by experience in India
+        """Generate comparison message for the freelancer (location-independent for remote work)."""
+        # Average rates by experience for freelancers (INR/hour)
         if years_of_experience < 2:
             avg_low = 300
             avg_high = 600
@@ -1269,13 +1248,13 @@ Keep each point concise (max 15 words). Focus on Indian freelance market context
         if hourly_rate > avg_high:
             position = "above"
             percentage = round(((hourly_rate - avg_rate) / avg_rate) * 100)
-            message = f"Your rate of ₹{hourly_rate:.0f}/hr is {percentage}% above the average for {category} freelancers in {city} (₹{avg_low}-₹{avg_high}/hr)."
+            message = f"Your rate of ₹{hourly_rate:.0f}/hr is {percentage}% above the average for {category} freelancers (₹{avg_low}-₹{avg_high}/hr)."
         elif hourly_rate < avg_low:
             position = "below"
             percentage = round(((avg_rate - hourly_rate) / avg_rate) * 100)
-            message = f"Your rate of ₹{hourly_rate:.0f}/hr is {percentage}% below the average for {category} freelancers in {city} (₹{avg_low}-₹{avg_high}/hr)."
+            message = f"Your rate of ₹{hourly_rate:.0f}/hr is {percentage}% below the average for {category} freelancers (₹{avg_low}-₹{avg_high}/hr)."
         else:
-            message = f"Your rate of ₹{hourly_rate:.0f}/hr is within the average range for {category} freelancers in {city} (₹{avg_low}-₹{avg_high}/hr)."
+            message = f"Your rate of ₹{hourly_rate:.0f}/hr is within the average range for {category} freelancers (₹{avg_low}-₹{avg_high}/hr)."
 
         return message
 
